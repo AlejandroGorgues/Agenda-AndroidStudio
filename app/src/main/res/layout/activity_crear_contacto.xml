@@ -54,7 +54,7 @@
         android:orientation="horizontal">
 
         <Button
-            android:id="@+id/crear"
+            android:id="@+id/bCrear"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:backgroundTint="#adfb06"
@@ -65,6 +65,6 @@
             android:layout_height="wrap_content"
             android:text="Cancelar"
             android:backgroundTint="#06befb"
-            android:id="@+id/cancelar" />
+            android:id="@+id/bCancelar" />
     </LinearLayout>
 </LinearLayout>

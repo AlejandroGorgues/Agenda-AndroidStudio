@@ -5,6 +5,7 @@ import android.app.ListActivity
 import android.content.Intent
 
 import android.os.Bundle
+import android.support.design.widget.FloatingActionButton
 import android.util.Log
 import android.view.ContextMenu
 import android.view.MenuItem
@@ -18,7 +19,7 @@ import android.widget.TextView
 
 class AgendaActivity : ListActivity() {
     private var iDAct = 0
-    private var addContactoB: Button? = null //, bBorrar,bModificar;
+    private var addContactoB: FloatingActionButton? = null //, bBorrar,bModificar;
     private var agendaDB: AgendaBaseDatos? = null
     private var agendaAdapter: AgendaAdapter? = null
     // private ListAdapter adaptador;
@@ -28,20 +29,20 @@ class AgendaActivity : ListActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_agenda)
-        addContactoB = findViewById<Button>(R.id.addContacto)
+        addContactoB = findViewById(R.id.addContacto)
         addContactoB!!.setOnClickListener { view -> creaContacto(view) }
         // Lo primero será crear un objeto de la clase MiBaseDatos al que pasaremos el contexto de la aplicación
         agendaDB = AgendaBaseDatos(this)
         rellenaLista()
-        registerForContextMenu(listView)
+        //registerForContextMenu(listView)
 
     }
 
     //TODO: ESTA MAL, NO LO ENTIENDO HAY QUE REVISARLO
     override fun onListItemClick(lv: ListView, view: View, posicion: Int, id: Long) {
-        val miId = findViewById<TextView>(R.id.cNombre)
+        //val miId = findViewById<TextView>(R.id.cNombre)
         iDAct = ident!![posicion]
-        modificarContacto(view)
+        modificarContacto()
 
     }
 
@@ -60,6 +61,7 @@ class AgendaActivity : ListActivity() {
                                               MDB.recuperarNotasCursor(),
                                              new String[] { "_id", "fecha"},
                                              new int[] { R.id.tVID, R.id.tVFecha},
+
                                              FLAG_REGISTER_CONTENT_OBSERVER);*/
             listAdapter = agendaAdapter
         }
@@ -72,7 +74,7 @@ class AgendaActivity : ListActivity() {
         startActivityForResult(i, CODIGOA)
     }
 
-    fun modificarContacto(vista: View) {
+    fun modificarContacto() {
         val miContacto: Contacto = agendaDB!!.buscarContacto(iDAct)
         val i = Intent(this, MostrarContacto::class.java)
         i.putExtra("ID", iDAct)
@@ -96,21 +98,21 @@ class AgendaActivity : ListActivity() {
     override fun onActivityResult(resul: Int, codigo: Int, data: Intent) {
         if (codigo == Activity.RESULT_OK) {
             if (resul == CODIGOA) {
-                val nombre = data.extras!!.getString("nombre")
-                val direccion = data.extras!!.getString("direccion")
-                val movil = data.extras!!.getString("movil")
-                val telefono = data.extras!!.getString("telefono")
-                val correo = data.extras!!.getString("correo")
+                val nombre = data.extras!!.getString("Nombre")
+                val direccion = data.extras!!.getString("Direccion")
+                val movil = data.extras!!.getString("Movil")
+                val telefono = data.extras!!.getString("Telefono")
+                val correo = data.extras!!.getString("Correo")
 
                 agendaDB!!.insertarContacto(nombre, direccion, movil, telefono, correo)
                 rellenaLista()
                 // adaptador.notifyDataSetChanged(); // metodo para notificar que los datos han cambiado
             } else {
-                val nombre = data.extras!!.getString("nombre")
-                val direccion = data.extras!!.getString("direccion")
-                val movil = data.extras!!.getString("movil")
-                val telefono = data.extras!!.getString("telefono")
-                val correo = data.extras!!.getString("correo")
+                val nombre = data.extras!!.getString("Nombre")
+                val direccion = data.extras!!.getString("Direccion")
+                val movil = data.extras!!.getString("Movil")
+                val telefono = data.extras!!.getString("Telefono")
+                val correo = data.extras!!.getString("Correo")
                 val mid = data.extras!!.getInt("ID")
                 agendaDB!!.modificarContacto(mid, nombre, direccion, movil, telefono, correo)
                 rellenaLista()

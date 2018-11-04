@@ -8,6 +8,8 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
 
+
+
 class AgendaBaseDatos(context: Context) : SQLiteOpenHelper(context, NOMBRE_DB, null, VERSION_DB) {
 
     override fun onCreate(db: SQLiteDatabase) {
@@ -25,8 +27,16 @@ class AgendaBaseDatos(context: Context) : SQLiteOpenHelper(context, NOMBRE_DB, n
 
     fun insertarContacto(nombre: String, direccion: String, movil:String, telefono:String, correo:String) {
 
-        val db = writableDatabase
-        db?.execSQL("INSERT OR IGNORE INTO contactos(nombre,direccion,movil,telefono,correo) VALUES (nombre,direccion,movil,telefono,correo) ")
+        val db = this.writableDatabase
+        val values = ContentValues()
+        values.put("nombre", nombre)
+        values.put("direccion", direccion)
+        values.put("movil", movil)
+        values.put("telefono", telefono)
+        values.put("correo", correo)
+
+// Inserting Row
+        db.insert("contactos", null, values)
 
         db!!.close()
     }
@@ -47,7 +57,7 @@ class AgendaBaseDatos(context: Context) : SQLiteOpenHelper(context, NOMBRE_DB, n
 
     fun borrarContacto(id: Int) {
         val db = writableDatabase
-        db.delete("notas", "_id=$id", null)
+        db.delete("contactos", "_id=$id", null)
         db.close()
         /* como en insert se puede utilizar db.execSQL de la sigueinte manera
         Eliminar un registro con execSQL(), utilizando argumentos
@@ -59,9 +69,9 @@ class AgendaBaseDatos(context: Context) : SQLiteOpenHelper(context, NOMBRE_DB, n
     fun buscarContacto(id: Int): Contacto {
         val db = readableDatabase
         val valoresRecuperar = arrayOf("_id", "nombre", "direccion", "movil", "telefono", "correo")
-        val c = db.query("notas", valoresRecuperar, "_id=$id", null, null, null, null, null)
+        val c = db.query("contactos", valoresRecuperar, "_id=$id", null, null, null, null, null)
         c?.moveToFirst()
-        val contacto = Contacto(c!!.getInt(0), c.getString(1), c.getString(2), c.getString(2),c.getString(2),c.getString(2))
+        val contacto = Contacto(c!!.getInt(0), c.getString(1), c.getString(2), c.getString(3),c.getString(4),c.getString(5))
         db.close()
         c.close()
         return contacto
@@ -73,7 +83,7 @@ class AgendaBaseDatos(context: Context) : SQLiteOpenHelper(context, NOMBRE_DB, n
         val valoresRecuperar = arrayOf("_id", "nombre", "direccion", "movil", "telefono", "correo")
 
 
-        return db.query("notas", valoresRecuperar, null, null, null, null, null, null)
+        return db.query("contactos", valoresRecuperar, null, null, null, null, null, null)
 
     }
 
