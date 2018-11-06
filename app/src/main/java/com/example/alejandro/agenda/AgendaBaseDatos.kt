@@ -6,11 +6,14 @@ import android.database.Cursor
 import android.database.DatabaseUtils
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
-
-
+import android.util.Log
+import org.json.JSONObject
+import org.json.JSONArray
 
 
 class AgendaBaseDatos(context: Context) : SQLiteOpenHelper(context, NOMBRE_DB, null, VERSION_DB) {
+
+    private val path = context.filesDir.parentFile.path + NOMBRE_DB
 
     override fun onCreate(db: SQLiteDatabase) {
 
@@ -111,6 +114,49 @@ class AgendaBaseDatos(context: Context) : SQLiteOpenHelper(context, NOMBRE_DB, n
             datosId = IntArray(0)
         cursor.close()
         return datosId
+    }
+
+    fun getJson(): JSONArray {
+
+        Log.e("aqui", path)
+        val db = readableDatabase
+        //val myDataBase = SQLiteDatabase.openDatabase(path, null, SQLiteDatabase.OPEN_READONLY)
+
+
+        val searchQuery = "SELECT  * FROM contactos"
+        val cursor = db.rawQuery(searchQuery, null)
+
+        val resultSet = JSONArray()
+
+        cursor.moveToFirst()
+        while (!cursor.isAfterLast) {
+
+            val totalColumn = cursor.columnCount
+            val rowObject = JSONObject()
+
+            for (i in 0 until totalColumn) {
+                if (cursor.getColumnName(i) != null) {
+
+                    try {
+
+                        if (cursor.getString(i) != null) {
+                            rowObject.put(cursor.getColumnName(i), cursor.getString(i))
+                        } else {
+                            rowObject.put(cursor.getColumnName(i), "")
+                        }
+                    } catch (e: Exception) {
+                    }
+
+                }
+
+            }
+
+            resultSet.put(rowObject)
+            cursor.moveToNext()
+        }
+
+        cursor.close()
+        return resultSet
     }
 
     companion object {

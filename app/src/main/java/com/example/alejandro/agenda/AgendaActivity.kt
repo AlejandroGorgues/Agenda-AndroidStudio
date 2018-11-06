@@ -1,37 +1,78 @@
 package com.example.alejandro.agenda
 
+import android.Manifest
 import android.app.Activity
 import android.app.ListActivity
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
 
 import android.os.Bundle
 import android.support.design.widget.FloatingActionButton
+import android.support.design.widget.Snackbar
+import android.support.v4.app.ActivityCompat
+import android.support.v4.content.ContextCompat
 import android.util.Log
-import android.view.ContextMenu
-import android.view.MenuItem
 import android.view.View
-import android.widget.AdapterView
-import android.widget.Button
+
 
 import android.widget.ListView
-import android.widget.TextView
+import android.widget.Toast
+import java.io.File
+import java.io.IOException
+import java.io.OutputStreamWriter
+import java.nio.file.Files
+import java.nio.file.Paths
 
 
 class AgendaActivity : ListActivity() {
     private var iDAct = 0
-    private var addContactoB: FloatingActionButton? = null //, bBorrar,bModificar;
+    private var addContactoB: FloatingActionButton? = null
+    private var exportLineasB: FloatingActionButton? = null
+    private var exportJsonB: FloatingActionButton? = null
+    private var importLineasB: FloatingActionButton? = null
+    private var importJsonB: FloatingActionButton? = null
     private var agendaDB: AgendaBaseDatos? = null
     private var agendaAdapter: AgendaAdapter? = null
-    // private ListAdapter adaptador;
     private var numFilas: Int = 0
     private var ident: IntArray? = null
+    private lateinit var constraintContacto: View
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_agenda)
+
+        comprobarPermisos()
+        constraintContacto = findViewById(R.id.constrain_contacto)
         addContactoB = findViewById(R.id.addContacto)
-        addContactoB!!.setOnClickListener { view -> creaContacto(view) }
-        // Lo primero será crear un objeto de la clase MiBaseDatos al que pasaremos el contexto de la aplicación
+        addContactoB!!.setOnClickListener { creaContacto() }
+
+        exportLineasB = findViewById(R.id.exportLineas)
+
+
+        exportJsonB = findViewById(R.id.exportJson)
+        exportJsonB!!.setOnClickListener {
+            try {
+                val miArchivo = OutputStreamWriter(openFileOutput(ARCHIVO, Activity.MODE_PRIVATE))
+                miArchivo.write(agendaDB!!.getJson().toString())
+                miArchivo.flush()
+                miArchivo.close()
+            } catch (e: IOException) {
+                val t = Toast.makeText(this, "Error de E/S", Toast.LENGTH_LONG)
+                t.show()
+            }
+        }
+
+        importJsonB = findViewById(R.id.importJson)
+        importJsonB!!.setOnClickListener {
+            comprobarPermisos()
+
+            //LEER DEL FICHERO
+
+           Log.e("aqui", File(filesDir.toString() + "/"+ARCHIVO ).inputStream().readBytes().toString(Charsets.UTF_8))
+        }
+
         agendaDB = AgendaBaseDatos(this)
         rellenaLista()
         //registerForContextMenu(listView)
@@ -40,7 +81,6 @@ class AgendaActivity : ListActivity() {
 
     //TODO: ESTA MAL, NO LO ENTIENDO HAY QUE REVISARLO
     override fun onListItemClick(lv: ListView, view: View, posicion: Int, id: Long) {
-        //val miId = findViewById<TextView>(R.id.cNombre)
         iDAct = ident!![posicion]
         modificarContacto()
 
@@ -53,23 +93,13 @@ class AgendaActivity : ListActivity() {
         if (numFilas > 0) {
             ident = agendaDB!!.recuperaIds()
             agendaAdapter = AgendaAdapter(this, agendaDB!!.buscarContactoCursor())
-
-
-            /*  se puede hacer mas facil con un objeto de tipo SimpleCursorAdapter
-          adaptador = new SimpleCursorAdapter(this,
-                                               R.layout.elementolista,
-                                              MDB.recuperarNotasCursor(),
-                                             new String[] { "_id", "fecha"},
-                                             new int[] { R.id.tVID, R.id.tVFecha},
-
-                                             FLAG_REGISTER_CONTENT_OBSERVER);*/
             listAdapter = agendaAdapter
         }
 
     }
 
 
-    fun creaContacto(vista: View) {
+    fun creaContacto() {
         val i = Intent(this, CrearContacto::class.java)
         startActivityForResult(i, CODIGOA)
     }
@@ -86,14 +116,6 @@ class AgendaActivity : ListActivity() {
 
         startActivityForResult(i, CODIGOM)
     }
-    /*fun eliminaNota(vista: View)
-        {
-            val i = Intent(this, MuestraNota::class.java)
-            i.putExtra("ID", iDAct)
-
-
-        }*/
-
 
     override fun onActivityResult(resul: Int, codigo: Int, data: Intent) {
         if (codigo == Activity.RESULT_OK) {
@@ -122,69 +144,79 @@ class AgendaActivity : ListActivity() {
             val mid = data.extras!!.getInt("ID")
             agendaDB!!.borrarContacto(mid)
             rellenaLista()
+        } else {
+            comprobarPermisos()
         }
     }
 
+    override fun onRequestPermissionsResult(requestCode: Int,
+                                            permissions: Array<String>, grantResults: IntArray) {
+        val t1: Toast
 
-    /*fun inserta() {
-        agendaDB!!.insertarNota("Esta es la primera nota", "22/09/1965")
-        agendaDB!!.insertarNota("Esta es la segunda nota", "22/09/1985")
-    }*/
 
-   /* override// Método donde definimos el menú contextual cuando se despliega
-    fun onCreateContextMenu(menu: ContextMenu, v: View,
-                            menuInfo: ContextMenu.ContextMenuInfo) {
-        super.onCreateContextMenu(menu, v, menuInfo)
-        //Inflador del menú contextual
-        val inflater = menuInflater
-        // Si el componente que vamos a dibujar es la etiqueta usamos
-        // el fichero XML correspondiente
-        if (v.id == listView.id)
+        when (requestCode) {
+            MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE ->
 
-            menu.setHeaderTitle("Menu Contextual")
-        inflater.inflate(R.menu.menu_context_lista, menu)
-        // Si el componente que vamos a dibujar es el ListView usamos
-        // el fichero XML correspondiente
-
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    t1 = Toast.makeText(this, "permisos de escritura concedidios", Toast.LENGTH_LONG)
+                    t1.show()
+                } else {
+                    val t = Toast.makeText(this, "No se han concedido los permisos necesarios", Toast.LENGTH_LONG)
+                    t.show()
+                    comprobarPermisos()
+                }
+        }
     }
 
-    override fun onContextItemSelected(item: MenuItem): Boolean {
-        val info = item.menuInfo as AdapterView.AdapterContextMenuInfo
-        val menuItemIndex = item.itemId
-        when (item.itemId) {
-            // Se selecciona la opción 1 de menú contextual de la etiqueta
-            R.id.Editar -> {
-                iDAct = ident!![info.position]
-                modificarNota(listView)
-                return true
-            }
-            // Se selecciona la opción 2 de menú contextual de la etiqueta
-            R.id.Eliminar -> {
-                iDAct = ident!![info.position]
-                MDB!!.borrarNota(iDAct)
-                rellenaLista()
-                return true
-            }
+    internal fun comprobarPermisos() {
+        val permisos = arrayOf(Manifest.permission.READ_CALL_LOG, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            Toast.makeText(this, "This version is not Android 6 or later " + Build.VERSION.SDK_INT, Toast.LENGTH_LONG).show()
+        } else {
+            if (ContextCompat.checkSelfPermission(this,
+                            permisos[1]) != PackageManager.PERMISSION_GRANTED) {
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                                permisos[1])) {
 
-            R.id.Nuevo -> {
-                iDAct = ident!![info.position]
-                creaNota(listView)
-                rellenaLista()
-                return true
+                    showSnackBar("escritura en SD")
+                } else {
+                    Log.e("aqui", "dsaf")
+                    requestPermissions(
+                            arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE)
+                }
+            } else {
+                Log.e("aqui", "dsafffff")
+                ActivityCompat.requestPermissions(this,
+                        arrayOf(permisos[1]), MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE)
             }
-
-
-            else -> return super.onContextItemSelected(item)
         }
+    }
 
+    private fun showSnackBar(texto: String) {
+        Snackbar.make(findViewById(R.id.constrain_contacto), "conceder permisos de $texto", Snackbar.LENGTH_INDEFINITE)
+                .setAction("Configuración") { openSettings() }
+                .addCallback(object : Snackbar.Callback() {
+                    override fun onDismissed(snackbar: Snackbar?, event: Int) {
+                        super.onDismissed(snackbar, event)
+                        if (event != Snackbar.Callback.DISMISS_EVENT_ACTION) {
 
-    }*/
+                            comprobarPermisos()
+                        }
+                    }
+                }).show()
+    }
+
+    private fun openSettings() {
+        val intent = Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+        intent.data = Uri.parse("package:$packageName")
+        startActivityForResult(intent, CODIGOA)
+    }
 
     companion object {
         val CODIGOA = 12
         val CODIGOM = 13
         val RESULT_BORRAR = 14
+        val ARCHIVO = "contactos.CNT"
+        const val MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 1
     }
-
-
 }
