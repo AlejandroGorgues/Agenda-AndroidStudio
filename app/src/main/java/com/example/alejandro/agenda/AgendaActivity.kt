@@ -19,41 +19,44 @@ import android.view.View
 
 import android.widget.ListView
 import android.widget.Toast
+import org.json.JSONArray
 import java.io.File
 import java.io.IOException
 import java.io.OutputStreamWriter
-import java.nio.file.Files
-import java.nio.file.Paths
+import android.widget.AdapterView
+import android.widget.AdapterView.OnItemLongClickListener
+
+
+
+
 
 
 class AgendaActivity : ListActivity() {
     private var iDAct = 0
     private var addContactoB: FloatingActionButton? = null
-    private var exportLineasB: FloatingActionButton? = null
     private var exportJsonB: FloatingActionButton? = null
-    private var importLineasB: FloatingActionButton? = null
     private var importJsonB: FloatingActionButton? = null
     private var agendaDB: AgendaBaseDatos? = null
     private var agendaAdapter: AgendaAdapter? = null
     private var numFilas: Int = 0
     private var ident: IntArray? = null
+    private lateinit var listV: ListView
     private lateinit var constraintContacto: View
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_agenda)
-
         comprobarPermisos()
         constraintContacto = findViewById(R.id.constrain_contacto)
         addContactoB = findViewById(R.id.addContacto)
         addContactoB!!.setOnClickListener { creaContacto() }
-
-        exportLineasB = findViewById(R.id.exportLineas)
-
+        listV = listView
 
         exportJsonB = findViewById(R.id.exportJson)
         exportJsonB!!.setOnClickListener {
             try {
+
                 val miArchivo = OutputStreamWriter(openFileOutput(ARCHIVO, Activity.MODE_PRIVATE))
                 miArchivo.write(agendaDB!!.getJson().toString())
                 miArchivo.flush()
@@ -66,11 +69,32 @@ class AgendaActivity : ListActivity() {
 
         importJsonB = findViewById(R.id.importJson)
         importJsonB!!.setOnClickListener {
+            try {
             comprobarPermisos()
+            val jsonString =  File(filesDir.toString() + "/"+ARCHIVO ).inputStream().readBytes().toString(Charsets.UTF_8)
+            val objArray = JSONArray(jsonString)
+                for(i in 0..(objArray.length()-1)){
+                    val obj = objArray.getJSONObject(i)
+                    val id = obj.getString("_id")
+                    val nombre = obj.getString("nombre")
+                    val direccion = obj.getString("direccion")
+                    val movil = obj.getString("movil")
+                    val telefono = obj.getString("telefono")
+                    val correo = obj.getString("correo")
+                    agendaDB!!.insertarContacto(nombre,direccion,movil,telefono,correo)
+                }
+                rellenaLista()
 
-            //LEER DEL FICHERO
+            } catch (e: IOException) {
+                val t = Toast.makeText(this, "Error de E/S", Toast.LENGTH_LONG)
+                t.show()
+            }
+        }
 
-           Log.e("aqui", File(filesDir.toString() + "/"+ARCHIVO ).inputStream().readBytes().toString(Charsets.UTF_8))
+        listV.onItemLongClickListener = OnItemLongClickListener { parent, view, position, id ->
+            iDAct = ident!![position]
+            modificarContacto()
+            true
         }
 
         agendaDB = AgendaBaseDatos(this)
@@ -79,19 +103,20 @@ class AgendaActivity : ListActivity() {
 
     }
 
-    //TODO: ESTA MAL, NO LO ENTIENDO HAY QUE REVISARLO
     override fun onListItemClick(lv: ListView, view: View, posicion: Int, id: Long) {
-        iDAct = ident!![posicion]
-        modificarContacto()
-
+        intent = Intent(Intent.ACTION_CALL, Uri.parse("tel:" + "658554492"))
+        startActivity(intent)
     }
-
 
     fun rellenaLista() {
 
         numFilas = agendaDB!!.numerodeFilas()
         if (numFilas > 0) {
             ident = agendaDB!!.recuperaIds()
+            agendaAdapter = AgendaAdapter(this, agendaDB!!.buscarContactoCursor())
+            listAdapter = agendaAdapter
+        }else{
+            ident = null
             agendaAdapter = AgendaAdapter(this, agendaDB!!.buscarContactoCursor())
             listAdapter = agendaAdapter
         }
@@ -128,7 +153,7 @@ class AgendaActivity : ListActivity() {
 
                 agendaDB!!.insertarContacto(nombre, direccion, movil, telefono, correo)
                 rellenaLista()
-                // adaptador.notifyDataSetChanged(); // metodo para notificar que los datos han cambiado
+
             } else {
                 val nombre = data.extras!!.getString("Nombre")
                 val direccion = data.extras!!.getString("Direccion")
@@ -144,8 +169,6 @@ class AgendaActivity : ListActivity() {
             val mid = data.extras!!.getInt("ID")
             agendaDB!!.borrarContacto(mid)
             rellenaLista()
-        } else {
-            comprobarPermisos()
         }
     }
 
@@ -169,25 +192,28 @@ class AgendaActivity : ListActivity() {
     }
 
     internal fun comprobarPermisos() {
-        val permisos = arrayOf(Manifest.permission.READ_CALL_LOG, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        val permisos = arrayOf(Manifest.permission.READ_CALL_LOG, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CALL_PHONE)
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             Toast.makeText(this, "This version is not Android 6 or later " + Build.VERSION.SDK_INT, Toast.LENGTH_LONG).show()
         } else {
-            if (ContextCompat.checkSelfPermission(this,
-                            permisos[1]) != PackageManager.PERMISSION_GRANTED) {
+            if ((ContextCompat.checkSelfPermission(this,
+                            permisos[1]) != PackageManager.PERMISSION_GRANTED) || (ContextCompat.checkSelfPermission(this,
+                            permisos[2]) != PackageManager.PERMISSION_GRANTED) ){
                 if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                                permisos[1])) {
+                                permisos[1]) ) {
 
                     showSnackBar("escritura en SD")
+
+                }else if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                                permisos[2])){
+                    showSnackBar("callPhone")
                 } else {
-                    Log.e("aqui", "dsaf")
                     requestPermissions(
-                            arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE)
+                            arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CALL_PHONE), MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE)
                 }
             } else {
-                Log.e("aqui", "dsafffff")
                 ActivityCompat.requestPermissions(this,
-                        arrayOf(permisos[1]), MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE)
+                        arrayOf(permisos[1], permisos[2]), MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE)
             }
         }
     }

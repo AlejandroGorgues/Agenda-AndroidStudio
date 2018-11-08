@@ -13,7 +13,6 @@ import org.json.JSONArray
 
 class AgendaBaseDatos(context: Context) : SQLiteOpenHelper(context, NOMBRE_DB, null, VERSION_DB) {
 
-    private val path = context.filesDir.parentFile.path + NOMBRE_DB
 
     override fun onCreate(db: SQLiteDatabase) {
 
@@ -38,11 +37,12 @@ class AgendaBaseDatos(context: Context) : SQLiteOpenHelper(context, NOMBRE_DB, n
         values.put("telefono", telefono)
         values.put("correo", correo)
 
-// Inserting Row
         db.insert("contactos", null, values)
 
         db!!.close()
     }
+
+    //fun insertarContactoJSON()
 
     fun modificarContacto(id: Int, nombre: String, direccion: String, movil:String, telefono:String, correo:String) {
         val db = writableDatabase
@@ -62,11 +62,6 @@ class AgendaBaseDatos(context: Context) : SQLiteOpenHelper(context, NOMBRE_DB, n
         val db = writableDatabase
         db.delete("contactos", "_id=$id", null)
         db.close()
-        /* como en insert se puede utilizar db.execSQL de la sigueinte manera
-        Eliminar un registro con execSQL(), utilizando argumentos
-        String[] args = new String[]{ String.valueOf(id);};
-         db.execSQL("DELETE FROM notas WHERE _id=?", args);
-         */
     }
 
     fun buscarContacto(id: Int): Contacto {
@@ -118,9 +113,7 @@ class AgendaBaseDatos(context: Context) : SQLiteOpenHelper(context, NOMBRE_DB, n
 
     fun getJson(): JSONArray {
 
-        Log.e("aqui", path)
         val db = readableDatabase
-        //val myDataBase = SQLiteDatabase.openDatabase(path, null, SQLiteDatabase.OPEN_READONLY)
 
 
         val searchQuery = "SELECT  * FROM contactos"
@@ -160,7 +153,6 @@ class AgendaBaseDatos(context: Context) : SQLiteOpenHelper(context, NOMBRE_DB, n
     }
 
     companion object {
-
 
         private const val VERSION_DB = 1
         private const val NOMBRE_DB = "contactosDB.db"
