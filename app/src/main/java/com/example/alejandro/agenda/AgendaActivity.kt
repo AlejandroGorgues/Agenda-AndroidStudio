@@ -2,123 +2,166 @@ package com.example.alejandro.agenda
 
 import android.Manifest
 import android.app.Activity
-import android.app.ListActivity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 
 import android.os.Bundle
-import android.support.design.widget.FloatingActionButton
 import android.support.design.widget.Snackbar
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
+import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.Toolbar
 import android.util.Log
+import android.view.ContextMenu
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
+import android.widget.*
 
-
-import android.widget.ListView
-import android.widget.Toast
 import org.json.JSONArray
 import java.io.File
 import java.io.IOException
 import java.io.OutputStreamWriter
-import android.widget.AdapterView
-import android.widget.AdapterView.OnItemLongClickListener
 
 
 
 
 
 
-class AgendaActivity : ListActivity() {
+class AgendaActivity : AppCompatActivity() {
     private var iDAct = 0
-    private var addContactoB: FloatingActionButton? = null
-    private var exportJsonB: FloatingActionButton? = null
-    private var importJsonB: FloatingActionButton? = null
     private var agendaDB: AgendaBaseDatos? = null
     private var agendaAdapter: AgendaAdapter? = null
     private var numFilas: Int = 0
     private var ident: IntArray? = null
     private lateinit var listV: ListView
+    private lateinit var toolbar: Toolbar
     private lateinit var constraintContacto: View
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_agenda)
+        toolbar = findViewById(R.id.agendaToolbar)
+        setSupportActionBar(toolbar)
+
         comprobarPermisos()
         constraintContacto = findViewById(R.id.constrain_contacto)
-        addContactoB = findViewById(R.id.addContacto)
-        addContactoB!!.setOnClickListener { creaContacto() }
-        listV = listView
-
-        exportJsonB = findViewById(R.id.exportJson)
-        exportJsonB!!.setOnClickListener {
-            try {
-
-                val miArchivo = OutputStreamWriter(openFileOutput(ARCHIVO, Activity.MODE_PRIVATE))
-                miArchivo.write(agendaDB!!.getJson().toString())
-                miArchivo.flush()
-                miArchivo.close()
-            } catch (e: IOException) {
-                val t = Toast.makeText(this, "Error de E/S", Toast.LENGTH_LONG)
-                t.show()
-            }
-        }
-
-        importJsonB = findViewById(R.id.importJson)
-        importJsonB!!.setOnClickListener {
-            try {
-            comprobarPermisos()
-            val jsonString =  File(filesDir.toString() + "/"+ARCHIVO ).inputStream().readBytes().toString(Charsets.UTF_8)
-            val objArray = JSONArray(jsonString)
-                for(i in 0..(objArray.length()-1)){
-                    val obj = objArray.getJSONObject(i)
-                    val id = obj.getString("_id")
-                    val nombre = obj.getString("nombre")
-                    val direccion = obj.getString("direccion")
-                    val movil = obj.getString("movil")
-                    val telefono = obj.getString("telefono")
-                    val correo = obj.getString("correo")
-                    agendaDB!!.insertarContacto(nombre,direccion,movil,telefono,correo)
-                }
-                rellenaLista()
-
-            } catch (e: IOException) {
-                val t = Toast.makeText(this, "Error de E/S", Toast.LENGTH_LONG)
-                t.show()
-            }
-        }
-
-        listV.onItemLongClickListener = OnItemLongClickListener { parent, view, position, id ->
-            iDAct = ident!![position]
-            modificarContacto()
-            true
-        }
+        listV = findViewById(R.id.listAgenda)
+        registerForContextMenu(listV)
 
         agendaDB = AgendaBaseDatos(this)
         rellenaLista()
-        //registerForContextMenu(listView)
+    }
+
+
+
+    override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo)
+        when (v.id) {
+            R.id.listAgenda -> {
+                menuInflater.inflate(R.menu.menu_gestion_contacto, menu)
+            }
+        }
 
     }
 
-    override fun onListItemClick(lv: ListView, view: View, posicion: Int, id: Long) {
-        intent = Intent(Intent.ACTION_CALL, Uri.parse("tel:" + "658554492"))
-        startActivity(intent)
+    override fun onContextItemSelected(item: MenuItem): Boolean {
+        val menuInfo: AdapterView.AdapterContextMenuInfo = item.menuInfo as AdapterView.AdapterContextMenuInfo
+        iDAct = ident!![menuInfo.position]
+
+        return when (item.itemId) {
+            R.id.modificarC -> {
+                modificarContacto()
+                true
+            }
+            R.id.eliminarC -> {
+                val mid = ident!![menuInfo.position]
+                agendaDB!!.borrarContacto(mid)
+                rellenaLista()
+                true
+            }
+            R.id.llamarC -> {
+                val phoneNumber = String.format("tel: %s",agendaDB!!.buscarContacto(ident!![menuInfo.position]).telefono)
+                val dialIntent = Intent(Intent.ACTION_DIAL)
+                dialIntent.data = Uri.parse(phoneNumber)
+                startActivity(dialIntent)
+
+
+                return true
+            }
+            else -> super.onContextItemSelected(item)
+        }
     }
 
-    fun rellenaLista() {
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_agenda, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.action_add-> {
+                creaContacto()
+                return true
+            }
+            R.id.action_exportarJSON -> {
+                try {
+
+                    val miArchivo = OutputStreamWriter(openFileOutput(ARCHIVO, Activity.MODE_PRIVATE))
+                    miArchivo.write(agendaDB!!.getJson().toString())
+                    miArchivo.flush()
+                    miArchivo.close()
+                } catch (e: IOException) {
+                    val t = Toast.makeText(this, "Error de E/S", Toast.LENGTH_LONG)
+                    t.show()
+                }
+
+                return true
+            }
+            R.id.action_importarJSON -> {
+                try {
+                    comprobarPermisos()
+                    val jsonString =  File(filesDir.toString() + "/"+ARCHIVO ).inputStream().readBytes().toString(Charsets.UTF_8)
+                    val objArray = JSONArray(jsonString)
+                    for(i in 0..(objArray.length()-1)){
+                        val obj = objArray.getJSONObject(i)
+                        val id = obj.getString("_id")
+                        val nombre = obj.getString("nombre")
+                        val direccion = obj.getString("direccion")
+                        val movil = obj.getString("movil")
+                        val telefono = obj.getString("telefono")
+                        val correo = obj.getString("correo")
+                        agendaDB!!.insertarContacto(nombre,direccion,movil,telefono,correo)
+                    }
+                    rellenaLista()
+
+                } catch (e: IOException) {
+                    val t = Toast.makeText(this, "Error de E/S", Toast.LENGTH_LONG)
+                    t.show()
+                }
+
+
+                return true
+            }
+            else -> return super.onOptionsItemSelected(item)
+        }
+    }
+
+
+    private fun rellenaLista() {
 
         numFilas = agendaDB!!.numerodeFilas()
         if (numFilas > 0) {
             ident = agendaDB!!.recuperaIds()
             agendaAdapter = AgendaAdapter(this, agendaDB!!.buscarContactoCursor())
-            listAdapter = agendaAdapter
+            listV.adapter = agendaAdapter
         }else{
             ident = null
             agendaAdapter = AgendaAdapter(this, agendaDB!!.buscarContactoCursor())
-            listAdapter = agendaAdapter
+            listV.adapter = agendaAdapter
         }
 
     }
@@ -142,35 +185,32 @@ class AgendaActivity : ListActivity() {
         startActivityForResult(i, CODIGOM)
     }
 
-    override fun onActivityResult(resul: Int, codigo: Int, data: Intent) {
+    override fun onActivityResult(resul: Int, codigo: Int, data: Intent?) {
         if (codigo == Activity.RESULT_OK) {
             if (resul == CODIGOA) {
-                val nombre = data.extras!!.getString("Nombre")
-                val direccion = data.extras!!.getString("Direccion")
-                val movil = data.extras!!.getString("Movil")
-                val telefono = data.extras!!.getString("Telefono")
-                val correo = data.extras!!.getString("Correo")
+                val nombre = data!!.extras.getString("Nombre")
+                val direccion = data.extras.getString("Direccion")
+                val movil = data.extras.getString("Movil")
+                val telefono = data.extras.getString("Telefono")
+                val correo = data.extras.getString("Correo")
 
                 agendaDB!!.insertarContacto(nombre, direccion, movil, telefono, correo)
                 rellenaLista()
 
             } else {
-                val nombre = data.extras!!.getString("Nombre")
-                val direccion = data.extras!!.getString("Direccion")
-                val movil = data.extras!!.getString("Movil")
-                val telefono = data.extras!!.getString("Telefono")
-                val correo = data.extras!!.getString("Correo")
-                val mid = data.extras!!.getInt("ID")
+                val nombre = data!!.extras.getString("Nombre")
+                val direccion = data.extras.getString("Direccion")
+                val movil = data.extras.getString("Movil")
+                val telefono = data.extras.getString("Telefono")
+                val correo = data.extras.getString("Correo")
+                val mid = data.extras.getInt("ID")
                 agendaDB!!.modificarContacto(mid, nombre, direccion, movil, telefono, correo)
                 rellenaLista()
             }
 
-        } else if (codigo == RESULT_BORRAR) {
-            val mid = data.extras!!.getInt("ID")
-            agendaDB!!.borrarContacto(mid)
-            rellenaLista()
         }
     }
+
 
     override fun onRequestPermissionsResult(requestCode: Int,
                                             permissions: Array<String>, grantResults: IntArray) {
@@ -199,16 +239,12 @@ class AgendaActivity : ListActivity() {
             if ((ContextCompat.checkSelfPermission(this,
                             permisos[1]) != PackageManager.PERMISSION_GRANTED) || (ContextCompat.checkSelfPermission(this,
                             permisos[2]) != PackageManager.PERMISSION_GRANTED) ){
-                if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                                permisos[1]) ) {
-
-                    showSnackBar("escritura en SD")
-
-                }else if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                                permisos[2])){
-                    showSnackBar("callPhone")
-                } else {
-                    requestPermissions(
+                when {
+                    ActivityCompat.shouldShowRequestPermissionRationale(this,
+                            permisos[1]) -> showSnackBar("escritura en SD")
+                    ActivityCompat.shouldShowRequestPermissionRationale(this,
+                            permisos[2]) -> showSnackBar("callPhone")
+                    else -> requestPermissions(
                             arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CALL_PHONE), MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE)
                 }
             } else {
@@ -241,7 +277,6 @@ class AgendaActivity : ListActivity() {
     companion object {
         val CODIGOA = 12
         val CODIGOM = 13
-        val RESULT_BORRAR = 14
         val ARCHIVO = "contactos.CNT"
         const val MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 1
     }

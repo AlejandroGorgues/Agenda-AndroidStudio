@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".AgendaActivity">
+    <item android:id="@+id/action_add"
+        android:title="Añadir un contacto"
+        android:orderInCategory="100"
+        app:showAsAction="never" />
+    <item android:id="@+id/action_exportarJSON"
+        android:title="Exportar contactos a JSON"
+        android:orderInCategory="100"
+        app:showAsAction="never" />
+    <item android:id="@+id/action_importarJSON"
+        android:title="Importar contactos desde JSON"
+        android:orderInCategory="100"
+        app:showAsAction="never" />
+</menu>

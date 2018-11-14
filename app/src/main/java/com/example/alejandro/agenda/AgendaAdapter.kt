@@ -21,8 +21,13 @@ class AgendaAdapter(contexto: Context, c: Cursor) : CursorAdapter(contexto, c, f
     override fun bindView(vista: View, contexto: Context, c: Cursor) {
         nombre = vista.findViewById(R.id.cNombre) as TextView
         telefono = vista.findViewById(R.id.cTelefono) as TextView
+
         nombre.text = c.getString(c.getColumnIndex("nombre"))
         telefono.text = c.getString(c.getColumnIndex("telefono"))
+
+
+
+
 
     }
 

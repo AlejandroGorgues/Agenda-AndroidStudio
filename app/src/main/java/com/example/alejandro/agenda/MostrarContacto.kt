@@ -2,8 +2,10 @@ package com.example.alejandro.agenda
 
 import android.app.Activity
 import android.content.Intent
+import android.net.Uri
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.design.widget.FloatingActionButton
 import android.support.design.widget.TextInputLayout
 import android.text.Editable
 import android.text.TextWatcher
@@ -20,8 +22,8 @@ class MostrarContacto : AppCompatActivity() {
     private lateinit var edCorreo: EditText
 
     private var bGrabar: Button? = null
-    private var bborrar: Button? = null
     private var bCancelar: Button? = null
+    private var bLlamar: Button? = null
 
     private lateinit var tilNombre: TextInputLayout
     private lateinit var tilDireccion: TextInputLayout
@@ -52,8 +54,8 @@ class MostrarContacto : AppCompatActivity() {
         tilCorreo = findViewById(R.id.til_correo)
 
         bGrabar = findViewById(R.id.bGrabar)
-        bborrar = findViewById(R.id.bBorrar)
         bCancelar = findViewById(R.id.bCancelar)
+        bLlamar = findViewById(R.id.bLlamar)
 
         val extras = intent.extras
 
@@ -71,9 +73,13 @@ class MostrarContacto : AppCompatActivity() {
         edTelefono.setText(telefono)
         edCorreo.setText(correo)
 
-        bborrar!!.setOnClickListener { validarDatos(2) }
         bGrabar!!.setOnClickListener { validarDatos(1) }
         bCancelar!!.setOnClickListener { validarDatos(0) }
+        bLlamar!!.setOnClickListener{
+            intent = Intent(Intent.ACTION_CALL, Uri.parse("tel:$telefono"))
+            startActivity (intent)
+        }
+
 
         edNombre.addTextChangedListener(
                 object : TextWatcher {
@@ -231,9 +237,7 @@ class MostrarContacto : AppCompatActivity() {
                 i.putExtra("Telefono", edTelefono.text.toString())
                 i.putExtra("Correo", edCorreo.text.toString())
                 setResult(Activity.RESULT_OK, i)
-
             }
-            2 -> setResult(AgendaActivity.RESULT_BORRAR, i)
             else -> setResult(Activity.RESULT_CANCELED, i)
         }
 

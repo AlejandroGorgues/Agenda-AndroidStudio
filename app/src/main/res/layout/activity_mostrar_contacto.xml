@@ -7,7 +7,7 @@
     android:fitsSystemWindows="true"
     tools:context="com.example.alejandro.agenda.MostrarContacto">
 
-    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
@@ -18,6 +18,7 @@
         android:paddingTop="@dimen/activity_vertical_margin"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         tools:context="com.example.alejandro.agenda.MostrarContacto"
+        android:orientation="vertical"
         tools:showIn="@layout/activity_agenda">
 
         <LinearLayout
@@ -201,14 +202,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:backgroundTint="#adfb06"
-                android:text="Modificar" />
+                android:text="Guardar cambios" />
 
             <Button
+                android:id="@+id/bLlamar"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Eliminar"
-                android:id="@+id/bBorrar"
-                app:backgroundTint="#e93f2c" />
+                app:backgroundTint="#adfb06"
+                android:text="Llamar" />
 
             <Button
                 android:layout_width="wrap_content"
@@ -218,8 +219,5 @@
                 android:id="@+id/bCancelar" />
         </LinearLayout>
 
-    </RelativeLayout>
-
-
-
+    </LinearLayout>
 </android.support.design.widget.CoordinatorLayout>
