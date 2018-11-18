@@ -8,13 +8,14 @@ import android.net.Uri
 import android.os.Build
 
 import android.os.Bundle
+import android.support.design.widget.FloatingActionButton
 import android.support.design.widget.Snackbar
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.*
 import android.support.v7.widget.Toolbar
 import android.util.Log
-import android.view.ContextMenu
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -36,9 +37,13 @@ class AgendaActivity : AppCompatActivity() {
     private var agendaAdapter: AgendaAdapter? = null
     private var numFilas: Int = 0
     private var ident: IntArray? = null
-    private lateinit var listV: ListView
+    private lateinit var recyclerAgenda: RecyclerView
     private lateinit var toolbar: Toolbar
     private lateinit var constraintContacto: View
+
+    private var contactos: ArrayList<Contacto> = ArrayList()
+
+    private lateinit var addContactoFloatingB: FloatingActionButton
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,44 +52,41 @@ class AgendaActivity : AppCompatActivity() {
         toolbar = findViewById(R.id.agendaToolbar)
         setSupportActionBar(toolbar)
 
+        recyclerAgenda = findViewById(R.id.listAgenda)
+        agendaDB = AgendaBaseDatos(this)
+
+        rellenaLista()
+
+        agendaAdapter = AgendaAdapter(contactos)
+        agendaAdapter!!.setItemLongClickListener(View.OnClickListener { v ->
+            iDAct =ident!![recyclerAgenda.indexOfChild(v)]
+        })
+
+        inicializarReciclerView()
+
+        addContactoFloatingB = findViewById(R.id.floatCrearCliente)
+        addContactoFloatingB.setOnClickListener {  creaContacto() }
+
         comprobarPermisos()
         constraintContacto = findViewById(R.id.constrain_contacto)
-        listV = findViewById(R.id.listAgenda)
-        registerForContextMenu(listV)
-
-        agendaDB = AgendaBaseDatos(this)
-        rellenaLista()
-    }
-
-
-
-    override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo) {
-        super.onCreateContextMenu(menu, v, menuInfo)
-        when (v.id) {
-            R.id.listAgenda -> {
-                menuInflater.inflate(R.menu.menu_gestion_contacto, menu)
-            }
-        }
 
     }
 
     override fun onContextItemSelected(item: MenuItem): Boolean {
-        val menuInfo: AdapterView.AdapterContextMenuInfo = item.menuInfo as AdapterView.AdapterContextMenuInfo
-        iDAct = ident!![menuInfo.position]
 
         return when (item.itemId) {
-            R.id.modificarC -> {
+            0 -> {
                 modificarContacto()
                 true
             }
-            R.id.eliminarC -> {
-                val mid = ident!![menuInfo.position]
-                agendaDB!!.borrarContacto(mid)
+            2 -> {
+                agendaDB!!.borrarContacto(iDAct)
                 rellenaLista()
+                agendaAdapter!!.notifyDataSetChanged()
                 true
             }
-            R.id.llamarC -> {
-                val phoneNumber = String.format("tel: %s",agendaDB!!.buscarContacto(ident!![menuInfo.position]).telefono)
+           1 -> {
+                val phoneNumber = String.format("tel: %s",agendaDB!!.buscarContacto(iDAct).telefono)
                 val dialIntent = Intent(Intent.ACTION_DIAL)
                 dialIntent.data = Uri.parse(phoneNumber)
                 startActivity(dialIntent)
@@ -128,7 +130,6 @@ class AgendaActivity : AppCompatActivity() {
                     val objArray = JSONArray(jsonString)
                     for(i in 0..(objArray.length()-1)){
                         val obj = objArray.getJSONObject(i)
-                        val id = obj.getString("_id")
                         val nombre = obj.getString("nombre")
                         val direccion = obj.getString("direccion")
                         val movil = obj.getString("movil")
@@ -137,6 +138,7 @@ class AgendaActivity : AppCompatActivity() {
                         agendaDB!!.insertarContacto(nombre,direccion,movil,telefono,correo)
                     }
                     rellenaLista()
+                    agendaAdapter!!.notifyDataSetChanged()
 
                 } catch (e: IOException) {
                     val t = Toast.makeText(this, "Error de E/S", Toast.LENGTH_LONG)
@@ -150,21 +152,28 @@ class AgendaActivity : AppCompatActivity() {
         }
     }
 
+    private fun inicializarReciclerView(){
+        recyclerAgenda.adapter = agendaAdapter
+        recyclerAgenda.layoutManager = LinearLayoutManager(this)
+        recyclerAgenda.addItemDecoration(ItemDecorationSeparator(this,ItemDecorationSeparator.VERTICAL_LIST))
+        recyclerAgenda.itemAnimator = DefaultItemAnimator()
+    }
 
     private fun rellenaLista() {
-
         numFilas = agendaDB!!.numerodeFilas()
-        if (numFilas > 0) {
-            ident = agendaDB!!.recuperaIds()
-            agendaAdapter = AgendaAdapter(this, agendaDB!!.buscarContactoCursor())
-            listV.adapter = agendaAdapter
+        ident = if (numFilas > 0) {
+            agendaDB!!.recuperaIds()
         }else{
-            ident = null
-            agendaAdapter = AgendaAdapter(this, agendaDB!!.buscarContactoCursor())
-            listV.adapter = agendaAdapter
+            null
         }
 
+        contactos.clear()
+        for (i in 0 until ident!!.size){
+            contactos.add(agendaDB!!.buscarContacto(ident!![i]))
+        }
     }
+
+
 
 
     fun creaContacto() {
@@ -196,6 +205,7 @@ class AgendaActivity : AppCompatActivity() {
 
                 agendaDB!!.insertarContacto(nombre, direccion, movil, telefono, correo)
                 rellenaLista()
+                agendaAdapter!!.notifyDataSetChanged()
 
             } else {
                 val nombre = data!!.extras.getString("Nombre")
@@ -206,6 +216,7 @@ class AgendaActivity : AppCompatActivity() {
                 val mid = data.extras.getInt("ID")
                 agendaDB!!.modificarContacto(mid, nombre, direccion, movil, telefono, correo)
                 rellenaLista()
+                agendaAdapter!!.notifyDataSetChanged()
             }
 
         }

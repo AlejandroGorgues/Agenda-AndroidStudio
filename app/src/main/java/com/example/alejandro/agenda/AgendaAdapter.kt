@@ -1,34 +1,70 @@
 package com.example.alejandro.agenda
 
-import android.content.Context
-import android.database.Cursor
-import android.support.v4.widget.CursorAdapter
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.support.v7.widget.RecyclerView
+import android.view.*
 import android.widget.TextView
+import java.util.ArrayList
 
-class AgendaAdapter(contexto: Context, c: Cursor) : CursorAdapter(contexto, c, false) {
-    private var inflater: LayoutInflater? = null
-    private lateinit var nombre: TextView
-    private lateinit var telefono: TextView
 
-    override fun newView(contexto: Context, c: Cursor, padre: ViewGroup): View {
-        inflater = contexto.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-        return inflater!!.inflate(R.layout.contacto_lista, padre, false)
+
+
+class AgendaAdapter(private val contactos : ArrayList<Contacto>) : RecyclerView.Adapter<AgendaAdapter.ContactosViewHolder>(), View.OnLongClickListener{
+
+
+    private var listener: View.OnClickListener? = null
+
+    override fun onCreateViewHolder(parent: ViewGroup, p1: Int): ContactosViewHolder {
+        val vh = LayoutInflater.from(parent.context).inflate(R.layout.contacto_lista, parent, false)
+        vh.setOnLongClickListener(this)
+        return ContactosViewHolder(vh)
     }
 
-    override fun bindView(vista: View, contexto: Context, c: Cursor) {
-        nombre = vista.findViewById(R.id.cNombre) as TextView
-        telefono = vista.findViewById(R.id.cTelefono) as TextView
-
-        nombre.text = c.getString(c.getColumnIndex("nombre"))
-        telefono.text = c.getString(c.getColumnIndex("telefono"))
-
-
-
-
-
+    override fun getItemCount(): Int {
+       return contactos.size
     }
 
+    override fun onBindViewHolder(cvh: ContactosViewHolder, pos: Int) {
+        val item = contactos[pos]
+        cvh.bindContactos(item)
+    }
+
+    override fun onLongClick(view: View?): Boolean {
+        if (listener != null)
+            listener!!.onClick(view)
+
+        return false
+    }
+
+    fun setItemLongClickListener(listener: View.OnClickListener) {
+        this.listener = listener
+    }
+
+    class ContactosViewHolder(viewC: View) : RecyclerView.ViewHolder(viewC), View.OnCreateContextMenuListener {
+
+        private var nombreC: TextView = viewC.findViewById(R.id.cNombre)
+        private var telefonoC: TextView = viewC.findViewById(R.id.cTelefono)
+
+        init {
+            viewC.setOnCreateContextMenuListener(this)
+        }
+
+        override fun onCreateContextMenu(menu: ContextMenu?, v: View?, p2: ContextMenu.ContextMenuInfo?) {
+            if (menu != null) {
+                menu.add(0,0,0,"Modificar")
+                menu.add(0,1,0,"Llamar")
+                menu.add(0,2,0,"Eliminar")
+            }
+
+        }
+
+
+        fun bindContactos(c: Contacto) {
+            nombreC.text = c.nombre
+            telefonoC.text = c.telefono
+
+
+        }
+
+    }
 }
+

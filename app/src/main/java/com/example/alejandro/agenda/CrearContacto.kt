@@ -6,12 +6,20 @@ import android.content.Intent
 import android.os.Bundle
 import android.support.design.widget.TextInputLayout
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.Toolbar
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Patterns
+import android.view.Menu
+import android.view.MenuItem
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.EditText
+import android.widget.Toast
+import org.json.JSONArray
+import java.io.File
+import java.io.IOException
+import java.io.OutputStreamWriter
 import java.util.regex.Pattern
 
 
@@ -22,9 +30,6 @@ class CrearContacto : AppCompatActivity() {
     private lateinit var telefono: EditText
     private lateinit var correo: EditText
 
-    private var bCrear: Button? = null
-    private var bCancelar: Button? = null
-
     private lateinit var tilNombre: TextInputLayout
     private lateinit var tilDireccion: TextInputLayout
     private lateinit var tilTelefono: TextInputLayout
@@ -33,10 +38,10 @@ class CrearContacto : AppCompatActivity() {
 
     internal var id: Int = 0
 
+    private lateinit var toolbar: Toolbar
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-
 
         val view = this.currentFocus
         if (view != null) {
@@ -44,6 +49,10 @@ class CrearContacto : AppCompatActivity() {
             imm.hideSoftInputFromWindow(view.windowToken, 0)
         }
         setContentView(R.layout.activity_crear_contacto)
+
+        toolbar = findViewById(R.id.crearCToolbar)
+        setSupportActionBar(toolbar)
+
         nombre = findViewById(R.id.crNombre)
         direccion = findViewById(R.id.crDireccion)
         movil = findViewById(R.id.crMovil)
@@ -55,12 +64,6 @@ class CrearContacto : AppCompatActivity() {
         tilTelefono = findViewById(R.id.til_telefono)
         tilMovil = findViewById(R.id.til_movil)
         tilCorreo = findViewById(R.id.til_correo)
-
-        bCrear = findViewById(R.id.bCrear)
-        bCancelar = findViewById(R.id.bCancelar)
-
-        bCancelar!!.setOnClickListener { validarDatos(2) }
-        bCrear!!.setOnClickListener { validarDatos(1) }
 
         nombre.addTextChangedListener(
                 object : TextWatcher {
@@ -142,6 +145,26 @@ class CrearContacto : AppCompatActivity() {
                         
                     }
                 })
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_crear_contacto, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.bAction_crearC-> {
+                validarDatos(1)
+                true
+            }
+            R.id.bAction_cancelarCrC -> {
+                validarDatos(2)
+
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 
     private fun esNombreValido(nombre: String): Boolean {

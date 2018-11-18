@@ -8,4 +8,5 @@
     <string name="hint_movil">Movil</string>
     <string name="accion_cancelar">Cancelar</string>
     <string name="accion_aceptar">Aceptar</string>
+    <string name="puntosVerticales">&#8942;</string>
 </resources>

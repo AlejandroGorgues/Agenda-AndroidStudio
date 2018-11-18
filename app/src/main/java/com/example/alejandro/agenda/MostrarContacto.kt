@@ -7,11 +7,19 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.design.widget.FloatingActionButton
 import android.support.design.widget.TextInputLayout
+import android.support.v7.widget.Toolbar
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Patterns
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.Button
 import android.widget.EditText
+import android.widget.Toast
+import org.json.JSONArray
+import java.io.File
+import java.io.IOException
+import java.io.OutputStreamWriter
 import java.util.regex.Pattern
 
 class MostrarContacto : AppCompatActivity() {
@@ -20,10 +28,6 @@ class MostrarContacto : AppCompatActivity() {
     private lateinit var edMovil: EditText
     private lateinit var edTelefono: EditText
     private lateinit var edCorreo: EditText
-
-    private var bGrabar: Button? = null
-    private var bCancelar: Button? = null
-    private var bLlamar: Button? = null
 
     private lateinit var tilNombre: TextInputLayout
     private lateinit var tilDireccion: TextInputLayout
@@ -38,9 +42,15 @@ class MostrarContacto : AppCompatActivity() {
     private var telefono: String? = null
     private var correo: String? = null
 
+    private lateinit var toolbar: Toolbar
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_mostrar_contacto)
+
+        toolbar = findViewById(R.id.modificarCToolbar)
+        setSupportActionBar(toolbar)
+
         edNombre = findViewById(R.id.edNombre)
         edDireccion = findViewById(R.id.edDireccion)
         edMovil = findViewById(R.id.edMovil)
@@ -52,10 +62,6 @@ class MostrarContacto : AppCompatActivity() {
         tilTelefono = findViewById(R.id.til_telefono)
         tilMovil = findViewById(R.id.til_movil)
         tilCorreo = findViewById(R.id.til_correo)
-
-        bGrabar = findViewById(R.id.bGrabar)
-        bCancelar = findViewById(R.id.bCancelar)
-        bLlamar = findViewById(R.id.bLlamar)
 
         val extras = intent.extras
 
@@ -72,14 +78,6 @@ class MostrarContacto : AppCompatActivity() {
         edMovil.setText(movil)
         edTelefono.setText(telefono)
         edCorreo.setText(correo)
-
-        bGrabar!!.setOnClickListener { validarDatos(1) }
-        bCancelar!!.setOnClickListener { validarDatos(0) }
-        bLlamar!!.setOnClickListener{
-            intent = Intent(Intent.ACTION_CALL, Uri.parse("tel:$telefono"))
-            startActivity (intent)
-        }
-
 
         edNombre.addTextChangedListener(
                 object : TextWatcher {
@@ -155,6 +153,30 @@ class MostrarContacto : AppCompatActivity() {
                     override fun afterTextChanged(p0: Editable?) {
                     }
                 })
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_modificar_contacto, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.bAction_modC-> {
+                validarDatos(1)
+                return true
+            }
+            R.id.bAction_llamarC -> {
+                intent = Intent(Intent.ACTION_CALL, Uri.parse("tel:$telefono"))
+                startActivity (intent)
+                return true
+            }
+            R.id.bAction_cancelarModC -> {
+                validarDatos(0)
+                return true
+            }
+            else -> return super.onOptionsItemSelected(item)
+        }
     }
 
     private fun esNombreValido(nombre: String): Boolean {

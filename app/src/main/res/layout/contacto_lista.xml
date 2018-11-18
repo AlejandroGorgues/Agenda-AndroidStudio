@@ -34,6 +34,7 @@
             android:textSize="20sp"
             android:id="@+id/cTelefono" />
 
+
     </LinearLayout>
 
 </LinearLayout>
