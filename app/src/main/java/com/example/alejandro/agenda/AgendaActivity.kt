@@ -26,12 +26,9 @@ import java.io.File
 import java.io.IOException
 import java.io.OutputStreamWriter
 
-
-
-
-
-
 class AgendaActivity : AppCompatActivity() {
+
+
     private var iDAct = 0
     private var agendaDB: AgendaBaseDatos? = null
     private var agendaAdapter: AgendaAdapter? = null
@@ -56,12 +53,6 @@ class AgendaActivity : AppCompatActivity() {
         agendaDB = AgendaBaseDatos(this)
 
         rellenaLista()
-
-        agendaAdapter = AgendaAdapter(contactos)
-        agendaAdapter!!.setItemLongClickListener(View.OnClickListener { v ->
-            iDAct =ident!![recyclerAgenda.indexOfChild(v)]
-        })
-
         inicializarReciclerView()
 
         addContactoFloatingB = findViewById(R.id.floatCrearCliente)
@@ -153,28 +144,33 @@ class AgendaActivity : AppCompatActivity() {
     }
 
     private fun inicializarReciclerView(){
-        recyclerAgenda.adapter = agendaAdapter
+        recyclerAgenda.adapter = AgendaAdapter(contactos, object : AgendaAdapter.OnItemClickListener {
+            override fun onItemClick(item: Contacto):Boolean {
+                iDAct = item.id
+                return false
+            }
+        })
         recyclerAgenda.layoutManager = LinearLayoutManager(this)
-        recyclerAgenda.addItemDecoration(ItemDecorationSeparator(this,ItemDecorationSeparator.VERTICAL_LIST))
         recyclerAgenda.itemAnimator = DefaultItemAnimator()
     }
 
     private fun rellenaLista() {
         numFilas = agendaDB!!.numerodeFilas()
+        contactos.clear()
         ident = if (numFilas > 0) {
             agendaDB!!.recuperaIds()
         }else{
             null
         }
 
-        contactos.clear()
-        for (i in 0 until ident!!.size){
-            contactos.add(agendaDB!!.buscarContacto(ident!![i]))
+
+        if (ident != null){
+            for (i in 0 until ident!!.size){
+                contactos.add(agendaDB!!.buscarContacto(ident!![i]))
+            }
         }
+
     }
-
-
-
 
     fun creaContacto() {
         val i = Intent(this, CrearContacto::class.java)
@@ -195,8 +191,10 @@ class AgendaActivity : AppCompatActivity() {
     }
 
     override fun onActivityResult(resul: Int, codigo: Int, data: Intent?) {
+        Log.e("aqui", resul.toString())
         if (codigo == Activity.RESULT_OK) {
             if (resul == CODIGOA) {
+
                 val nombre = data!!.extras.getString("Nombre")
                 val direccion = data.extras.getString("Direccion")
                 val movil = data.extras.getString("Movil")
@@ -214,6 +212,7 @@ class AgendaActivity : AppCompatActivity() {
                 val telefono = data.extras.getString("Telefono")
                 val correo = data.extras.getString("Correo")
                 val mid = data.extras.getInt("ID")
+
                 agendaDB!!.modificarContacto(mid, nombre, direccion, movil, telefono, correo)
                 rellenaLista()
                 agendaAdapter!!.notifyDataSetChanged()

@@ -42,8 +42,6 @@ class AgendaBaseDatos(context: Context) : SQLiteOpenHelper(context, NOMBRE_DB, n
         db!!.close()
     }
 
-    //fun insertarContactoJSON()
-
     fun modificarContacto(id: Int, nombre: String, direccion: String, movil:String, telefono:String, correo:String) {
         val db = writableDatabase
         val valores = ContentValues()

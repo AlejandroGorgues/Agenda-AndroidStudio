@@ -13,7 +13,6 @@
         android:layout_height="match_parent"
         tools:context=".AgendaActivity">
 
-
         <android.support.v7.widget.Toolbar
             android:id="@+id/agendaToolbar"
             android:layout_height="wrap_content"
@@ -40,6 +39,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             android:src="@drawable/ic_add_white_24dp"
+            app:backgroundTint="@color/colorPrimary"
             android:id="@+id/floatCrearCliente"/>
 
 

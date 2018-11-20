@@ -4,18 +4,18 @@ import android.support.v7.widget.RecyclerView
 import android.view.*
 import android.widget.TextView
 import java.util.ArrayList
+import android.view.LayoutInflater
 
 
+class AgendaAdapter(private val contactos : ArrayList<Contacto>, private val  listener: OnItemClickListener) : RecyclerView.Adapter<AgendaAdapter.ContactosViewHolder>() {
 
 
-class AgendaAdapter(private val contactos : ArrayList<Contacto>) : RecyclerView.Adapter<AgendaAdapter.ContactosViewHolder>(), View.OnLongClickListener{
+    interface OnItemClickListener {
+        fun onItemClick(item: Contacto): Boolean
+    }
 
-
-    private var listener: View.OnClickListener? = null
-
-    override fun onCreateViewHolder(parent: ViewGroup, p1: Int): ContactosViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, pos: Int): ContactosViewHolder {
         val vh = LayoutInflater.from(parent.context).inflate(R.layout.contacto_lista, parent, false)
-        vh.setOnLongClickListener(this)
         return ContactosViewHolder(vh)
     }
 
@@ -25,21 +25,10 @@ class AgendaAdapter(private val contactos : ArrayList<Contacto>) : RecyclerView.
 
     override fun onBindViewHolder(cvh: ContactosViewHolder, pos: Int) {
         val item = contactos[pos]
-        cvh.bindContactos(item)
+        cvh.bindContactos(item, listener)
     }
 
-    override fun onLongClick(view: View?): Boolean {
-        if (listener != null)
-            listener!!.onClick(view)
-
-        return false
-    }
-
-    fun setItemLongClickListener(listener: View.OnClickListener) {
-        this.listener = listener
-    }
-
-    class ContactosViewHolder(viewC: View) : RecyclerView.ViewHolder(viewC), View.OnCreateContextMenuListener {
+    class ContactosViewHolder (viewC: View) : RecyclerView.ViewHolder(viewC), View.OnCreateContextMenuListener {
 
         private var nombreC: TextView = viewC.findViewById(R.id.cNombre)
         private var telefonoC: TextView = viewC.findViewById(R.id.cTelefono)
@@ -57,14 +46,16 @@ class AgendaAdapter(private val contactos : ArrayList<Contacto>) : RecyclerView.
 
         }
 
-
-        fun bindContactos(c: Contacto) {
+        fun bindContactos(c: Contacto, listener: OnItemClickListener) {
             nombreC.text = c.nombre
             telefonoC.text = c.telefono
-
+            itemView.setOnLongClickListener { listener.onItemClick(c) }
 
         }
 
     }
+
+
+
 }
 
