@@ -52,7 +52,13 @@ class AgendaActivity : AppCompatActivity() {
         recyclerAgenda = findViewById(R.id.listAgenda)
         agendaDB = AgendaBaseDatos(this)
 
+
         rellenaLista()
+        agendaAdapter = AgendaAdapter(contactos)
+        agendaAdapter!!.setOnLongClickListener(View.OnLongClickListener { v ->
+            iDAct = recyclerAgenda.getChildLayoutPosition(v)+1
+            false
+        })
         inicializarReciclerView()
 
         addContactoFloatingB = findViewById(R.id.floatCrearCliente)
@@ -144,12 +150,7 @@ class AgendaActivity : AppCompatActivity() {
     }
 
     private fun inicializarReciclerView(){
-        recyclerAgenda.adapter = AgendaAdapter(contactos, object : AgendaAdapter.OnItemClickListener {
-            override fun onItemClick(item: Contacto):Boolean {
-                iDAct = item.id
-                return false
-            }
-        })
+        recyclerAgenda.adapter = agendaAdapter
         recyclerAgenda.layoutManager = LinearLayoutManager(this)
         recyclerAgenda.itemAnimator = DefaultItemAnimator()
     }
@@ -214,7 +215,7 @@ class AgendaActivity : AppCompatActivity() {
                 val mid = data.extras.getInt("ID")
 
                 agendaDB!!.modificarContacto(mid, nombre, direccion, movil, telefono, correo)
-                rellenaLista()
+                contactos[iDAct] = Contacto(mid, nombre, direccion, movil, telefono, correo)
                 agendaAdapter!!.notifyDataSetChanged()
             }
 

@@ -7,15 +7,13 @@ import java.util.ArrayList
 import android.view.LayoutInflater
 
 
-class AgendaAdapter(private val contactos : ArrayList<Contacto>, private val  listener: OnItemClickListener) : RecyclerView.Adapter<AgendaAdapter.ContactosViewHolder>() {
+class AgendaAdapter(private val contactos : ArrayList<Contacto>) : RecyclerView.Adapter<AgendaAdapter.ContactosViewHolder>(), View.OnLongClickListener {
+    private var listener: View.OnLongClickListener? = null
 
-
-    interface OnItemClickListener {
-        fun onItemClick(item: Contacto): Boolean
-    }
 
     override fun onCreateViewHolder(parent: ViewGroup, pos: Int): ContactosViewHolder {
         val vh = LayoutInflater.from(parent.context).inflate(R.layout.contacto_lista, parent, false)
+        vh.setOnLongClickListener(this)
         return ContactosViewHolder(vh)
     }
 
@@ -25,7 +23,18 @@ class AgendaAdapter(private val contactos : ArrayList<Contacto>, private val  li
 
     override fun onBindViewHolder(cvh: ContactosViewHolder, pos: Int) {
         val item = contactos[pos]
-        cvh.bindContactos(item, listener)
+        cvh.bindContactos(item)
+    }
+
+    override fun onLongClick(view: View?): Boolean {
+        if (listener != null)
+            listener!!.onLongClick(view)
+        return false
+    }
+
+    fun setOnLongClickListener(listener: View.OnLongClickListener) {
+        //asociamos  el listener real a nuestro adaptador en el momento de crearlo
+        this.listener = listener
     }
 
     class ContactosViewHolder (viewC: View) : RecyclerView.ViewHolder(viewC), View.OnCreateContextMenuListener {
@@ -46,10 +55,9 @@ class AgendaAdapter(private val contactos : ArrayList<Contacto>, private val  li
 
         }
 
-        fun bindContactos(c: Contacto, listener: OnItemClickListener) {
+        fun bindContactos(c: Contacto) {
             nombreC.text = c.nombre
             telefonoC.text = c.telefono
-            itemView.setOnLongClickListener { listener.onItemClick(c) }
 
         }
 
