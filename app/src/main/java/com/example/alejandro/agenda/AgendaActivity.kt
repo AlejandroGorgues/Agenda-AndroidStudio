@@ -15,11 +15,14 @@ import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.*
 import android.support.v7.widget.Toolbar
+import android.support.v7.widget.helper.ItemTouchHelper
 import android.util.Log
-import android.view.Menu
+import android.view.Gravity
 import android.view.MenuItem
 import android.view.View
 import android.widget.*
+import android.widget.PopupMenu
+import es.upm.etsisi.mirecyclerview.SwipeContactoTouch
 
 import org.json.JSONArray
 import java.io.File
@@ -54,12 +57,40 @@ class AgendaActivity : AppCompatActivity() {
 
 
         rellenaLista()
-        agendaAdapter = AgendaAdapter(contactos)
-        agendaAdapter!!.setOnLongClickListener(View.OnLongClickListener { v ->
+        agendaAdapter = AgendaAdapter(contactos, agendaDB!!)
+        agendaAdapter!!.setOnClickListener(View.OnClickListener { v ->
+            val popupMenu = PopupMenu(this, v)
+            popupMenu.inflate(R.menu.menu_gestion_contacto)
+            popupMenu.setOnMenuItemClickListener { item ->
+                when {
+                    item.itemId == R.id.llamarC -> {
+                        val phoneNumber = String.format("tel: %s",agendaDB!!.buscarContacto(iDAct).telefono)
+                        val dialIntent = Intent(Intent.ACTION_DIAL)
+                        dialIntent.data = Uri.parse(phoneNumber)
+                        startActivity(dialIntent)
+                        true
+                    }
+                    item.itemId == R.id.modificarC -> {
+                        modificarContacto()
+                        true
+                    }
+                    else -> {
+                        agendaDB!!.borrarContacto(iDAct)
+                        rellenaLista()
+                        agendaAdapter!!.notifyDataSetChanged()
+                        true
+                    }
+                }
+
+            }
+            popupMenu.show()
             iDAct = recyclerAgenda.getChildLayoutPosition(v)+1
-            false
         })
         inicializarReciclerView()
+
+        val callback = SwipeContactoTouch(agendaAdapter as ContactoTouchAdapter)
+        val touchHelper = ItemTouchHelper(callback)
+        touchHelper.attachToRecyclerView(recyclerAgenda)
 
         addContactoFloatingB = findViewById(R.id.floatCrearCliente)
         addContactoFloatingB.setOnClickListener {  creaContacto() }
@@ -67,37 +98,6 @@ class AgendaActivity : AppCompatActivity() {
         comprobarPermisos()
         constraintContacto = findViewById(R.id.constrain_contacto)
 
-    }
-
-    override fun onContextItemSelected(item: MenuItem): Boolean {
-
-        return when (item.itemId) {
-            0 -> {
-                modificarContacto()
-                true
-            }
-            2 -> {
-                agendaDB!!.borrarContacto(iDAct)
-                rellenaLista()
-                agendaAdapter!!.notifyDataSetChanged()
-                true
-            }
-           1 -> {
-                val phoneNumber = String.format("tel: %s",agendaDB!!.buscarContacto(iDAct).telefono)
-                val dialIntent = Intent(Intent.ACTION_DIAL)
-                dialIntent.data = Uri.parse(phoneNumber)
-                startActivity(dialIntent)
-
-
-                return true
-            }
-            else -> super.onContextItemSelected(item)
-        }
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.menu_agenda, menu)
-        return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

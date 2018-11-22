@@ -43,6 +43,16 @@
                     android:layout_toEndOf="@+id/textView"
                     android:layout_below="@+id/cNombre"
                     android:id="@+id/cTelefono" />
+
+                <TextView
+                    android:id="@+id/textViewOptions"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentTop="true"
+                    android:layout_toStartOf="@id/cNombre"
+                    android:text="@string/puntosVerticales"
+                    android:textAppearance="?android:textAppearanceLarge" />
         </RelativeLayout>
     </android.support.v7.widget.CardView>
 </LinearLayout>

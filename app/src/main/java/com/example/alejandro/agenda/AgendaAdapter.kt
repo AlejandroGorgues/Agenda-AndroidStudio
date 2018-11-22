@@ -3,22 +3,25 @@ package com.example.alejandro.agenda
 import android.support.v7.widget.RecyclerView
 import android.view.*
 import android.widget.TextView
-import java.util.ArrayList
 import android.view.LayoutInflater
+import java.util.*
 
 
-class AgendaAdapter(private val contactos : ArrayList<Contacto>) : RecyclerView.Adapter<AgendaAdapter.ContactosViewHolder>(), View.OnLongClickListener {
-    private var listener: View.OnLongClickListener? = null
+class AgendaAdapter(private val contactos : ArrayList<Contacto>, private val agendaDB: AgendaBaseDatos) : RecyclerView.Adapter<AgendaAdapter.ContactosViewHolder>(), ContactoTouchAdapter, View.OnClickListener {
+
+
+    private var listener: View.OnClickListener? = null
+
 
 
     override fun onCreateViewHolder(parent: ViewGroup, pos: Int): ContactosViewHolder {
         val vh = LayoutInflater.from(parent.context).inflate(R.layout.contacto_lista, parent, false)
-        vh.setOnLongClickListener(this)
+        vh.setOnClickListener(this)
         return ContactosViewHolder(vh)
     }
 
     override fun getItemCount(): Int {
-       return contactos.size
+        return contactos.size
     }
 
     override fun onBindViewHolder(cvh: ContactosViewHolder, pos: Int) {
@@ -26,34 +29,45 @@ class AgendaAdapter(private val contactos : ArrayList<Contacto>) : RecyclerView.
         cvh.bindContactos(item)
     }
 
-    override fun onLongClick(view: View?): Boolean {
+    override fun onClick(view: View?) {
         if (listener != null)
-            listener!!.onLongClick(view)
-        return false
+            listener!!.onClick(view)
     }
 
-    fun setOnLongClickListener(listener: View.OnLongClickListener) {
-        //asociamos  el listener real a nuestro adaptador en el momento de crearlo
+    fun setOnClickListener(listener: View.OnClickListener) {
         this.listener = listener
     }
 
-    class ContactosViewHolder (viewC: View) : RecyclerView.ViewHolder(viewC), View.OnCreateContextMenuListener {
+    override fun onMoverItem(fromPosition: Int, toPosition: Int) {
+        val contactoAux = contactos[fromPosition]
+        agendaDB.modificarContacto(contactos[fromPosition].id, contactos[toPosition].nombre!!, contactos[toPosition].direccion!!, contactos[toPosition].movil!!, contactos[toPosition].telefono!!, contactos[toPosition].correo!!)
+        agendaDB.modificarContacto(contactos[toPosition].id, contactoAux.nombre!!, contactoAux.direccion!!, contactoAux.movil!!, contactoAux.telefono!!, contactoAux.correo!!)
+        if (fromPosition < toPosition) {
+            for (i in fromPosition until toPosition) {
+                Collections.swap(contactos, i, i + 1) //método java para intercambiar las posiciones de elementos en un array
+            }
+        } else {
+            for (i in fromPosition downTo toPosition + 1) {
+                Collections.swap(contactos, i, i - 1)
+            }
+        }
+
+        notifyItemMoved(fromPosition, toPosition)
+    }
+
+    override fun onEliminarItem(position: Int) {
+        agendaDB.borrarContacto(contactos[position].id)
+        contactos.removeAt(position)
+        notifyItemRemoved(position)
+
+    }
+
+
+
+    class ContactosViewHolder (viewC: View) : RecyclerView.ViewHolder(viewC) {
 
         private var nombreC: TextView = viewC.findViewById(R.id.cNombre)
         private var telefonoC: TextView = viewC.findViewById(R.id.cTelefono)
-
-        init {
-            viewC.setOnCreateContextMenuListener(this)
-        }
-
-        override fun onCreateContextMenu(menu: ContextMenu?, v: View?, p2: ContextMenu.ContextMenuInfo?) {
-            if (menu != null) {
-                menu.add(0,0,0,"Modificar")
-                menu.add(0,1,0,"Llamar")
-                menu.add(0,2,0,"Eliminar")
-            }
-
-        }
 
         fun bindContactos(c: Contacto) {
             nombreC.text = c.nombre
