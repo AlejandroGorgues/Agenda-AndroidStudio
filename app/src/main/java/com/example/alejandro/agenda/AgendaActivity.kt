@@ -8,9 +8,13 @@ import android.net.Uri
 import android.os.Build
 
 import android.os.Bundle
+import android.os.PersistableBundle
 import android.support.design.widget.FloatingActionButton
 import android.support.design.widget.Snackbar
 import android.support.v4.app.ActivityCompat
+import android.support.v4.app.Fragment
+import android.support.v4.app.FragmentManager
+import android.support.v4.app.FragmentTransaction
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.*
@@ -29,266 +33,84 @@ import java.io.File
 import java.io.IOException
 import java.io.OutputStreamWriter
 
-class AgendaActivity : AppCompatActivity() {
+class AgendaActivity : AppCompatActivity(), AgendaFragment.DataPassListener, FragmentManager.OnBackStackChangedListener {
 
-
-    private var iDAct = 0
-    private var agendaDB: AgendaBaseDatos? = null
-    private var agendaAdapter: AgendaAdapter? = null
-    private var numFilas: Int = 0
-    private var ident: IntArray? = null
-    private lateinit var recyclerAgenda: RecyclerView
-    private lateinit var toolbar: Toolbar
-    private lateinit var constraintContacto: View
-
-    private var contactos: ArrayList<Contacto> = ArrayList()
-
-    private lateinit var addContactoFloatingB: FloatingActionButton
+    private var fragmentActual: Fragment? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_agenda)
-        toolbar = findViewById(R.id.agendaToolbar)
-        setSupportActionBar(toolbar)
 
-        recyclerAgenda = findViewById(R.id.listAgenda)
-        agendaDB = AgendaBaseDatos(this)
+        val  manager = supportFragmentManager
+        val transaction = manager.beginTransaction()
+        val fragmentLista = AgendaFragment()
+        fragmentActual = fragmentLista
+        transaction.add(R.id.agendaActivityLayout, fragmentLista,  "fragmentPrincipal")
+        transaction.addToBackStack("fragmentPrincipal")
+        transaction.commit()
+
+    }
 
 
-        rellenaLista()
-        agendaAdapter = AgendaAdapter(contactos, agendaDB!!)
-        agendaAdapter!!.setOnClickListener(View.OnClickListener { v ->
-            val popupMenu = PopupMenu(this, v)
-            popupMenu.inflate(R.menu.menu_gestion_contacto)
-            popupMenu.setOnMenuItemClickListener { item ->
-                when {
-                    item.itemId == R.id.llamarC -> {
-                        val phoneNumber = String.format("tel: %s",agendaDB!!.buscarContacto(iDAct).telefono)
-                        val dialIntent = Intent(Intent.ACTION_DIAL)
-                        dialIntent.data = Uri.parse(phoneNumber)
-                        startActivity(dialIntent)
-                        true
-                    }
-                    item.itemId == R.id.modificarC -> {
-                        modificarContacto()
-                        true
-                    }
-                    else -> {
-                        agendaDB!!.borrarContacto(iDAct)
-                        rellenaLista()
-                        agendaAdapter!!.notifyDataSetChanged()
-                        true
-                    }
-                }
+    override fun passData(data: Bundle, fragment: Int) {
+        val manager = supportFragmentManager
+        val transaction = manager.beginTransaction()
 
+        when (fragment) {
+            0 -> {
+                manager.addOnBackStackChangedListener(this)
+                val fragmentReplace = AgendaFragment()
+                fragmentActual = fragmentReplace
+                fragmentReplace.arguments = data
+                transaction.replace(R.id.agendaActivityLayout, fragmentReplace, "fragmentPrincipal")
+                transaction.addToBackStack("fragmentPrincipal")
+                transaction.commit()
+                manager.addOnBackStackChangedListener(this)
             }
-            popupMenu.show()
-            iDAct = recyclerAgenda.getChildLayoutPosition(v)+1
-        })
-        inicializarReciclerView()
-
-        val callback = SwipeContactoTouch(agendaAdapter as ContactoTouchAdapter)
-        val touchHelper = ItemTouchHelper(callback)
-        touchHelper.attachToRecyclerView(recyclerAgenda)
-
-        addContactoFloatingB = findViewById(R.id.floatCrearCliente)
-        addContactoFloatingB.setOnClickListener {  creaContacto() }
-
-        comprobarPermisos()
-        constraintContacto = findViewById(R.id.constrain_contacto)
-
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.action_add-> {
-                creaContacto()
-                return true
+            1 -> {
+                manager.addOnBackStackChangedListener(this)
+                val fragmentReplace = CrearContactoFragment()
+                fragmentActual = fragmentReplace
+                fragmentReplace.arguments = data
+                transaction.replace(R.id.agendaActivityLayout, fragmentReplace, "fragmentCrear")
+                transaction.addToBackStack("fragmentCrear")
+                transaction.commit()
+                manager.addOnBackStackChangedListener(this)
             }
-            R.id.action_exportarJSON -> {
-                try {
+            else -> {
+                manager.addOnBackStackChangedListener(this)
+                val fragmentReplace = MostrarContactoFragment()
+                fragmentReplace.arguments = data
+                fragmentActual = fragmentReplace
+                transaction.replace(R.id.agendaActivityLayout, fragmentReplace, "fragmentMostrar")
+                transaction.addToBackStack("fragmentMostrar")
+                transaction.commit()
 
-                    val miArchivo = OutputStreamWriter(openFileOutput(ARCHIVO, Activity.MODE_PRIVATE))
-                    miArchivo.write(agendaDB!!.getJson().toString())
-                    miArchivo.flush()
-                    miArchivo.close()
-                } catch (e: IOException) {
-                    val t = Toast.makeText(this, "Error de E/S", Toast.LENGTH_LONG)
-                    t.show()
-                }
-
-                return true
-            }
-            R.id.action_importarJSON -> {
-                try {
-                    comprobarPermisos()
-                    val jsonString =  File(filesDir.toString() + "/"+ARCHIVO ).inputStream().readBytes().toString(Charsets.UTF_8)
-                    val objArray = JSONArray(jsonString)
-                    for(i in 0..(objArray.length()-1)){
-                        val obj = objArray.getJSONObject(i)
-                        val nombre = obj.getString("nombre")
-                        val direccion = obj.getString("direccion")
-                        val movil = obj.getString("movil")
-                        val telefono = obj.getString("telefono")
-                        val correo = obj.getString("correo")
-                        agendaDB!!.insertarContacto(nombre,direccion,movil,telefono,correo)
-                    }
-                    rellenaLista()
-                    agendaAdapter!!.notifyDataSetChanged()
-
-                } catch (e: IOException) {
-                    val t = Toast.makeText(this, "Error de E/S", Toast.LENGTH_LONG)
-                    t.show()
-                }
-
-
-                return true
-            }
-            else -> return super.onOptionsItemSelected(item)
-        }
-    }
-
-    private fun inicializarReciclerView(){
-        recyclerAgenda.adapter = agendaAdapter
-        recyclerAgenda.layoutManager = LinearLayoutManager(this)
-        recyclerAgenda.itemAnimator = DefaultItemAnimator()
-    }
-
-    private fun rellenaLista() {
-        numFilas = agendaDB!!.numerodeFilas()
-        contactos.clear()
-        ident = if (numFilas > 0) {
-            agendaDB!!.recuperaIds()
-        }else{
-            null
-        }
-
-
-        if (ident != null){
-            for (i in 0 until ident!!.size){
-                contactos.add(agendaDB!!.buscarContacto(ident!![i]))
-            }
-        }
-
-    }
-
-    fun creaContacto() {
-        val i = Intent(this, CrearContacto::class.java)
-        startActivityForResult(i, CODIGOA)
-    }
-
-    fun modificarContacto() {
-        val miContacto: Contacto = agendaDB!!.buscarContacto(iDAct)
-        val i = Intent(this, MostrarContacto::class.java)
-        i.putExtra("ID", iDAct)
-        i.putExtra("Nombre", miContacto.nombre)
-        i.putExtra("Direccion", miContacto.direccion)
-        i.putExtra("Movil", miContacto.movil)
-        i.putExtra("Telefono", miContacto.telefono)
-        i.putExtra("Correo", miContacto.correo)
-
-        startActivityForResult(i, CODIGOM)
-    }
-
-    override fun onActivityResult(resul: Int, codigo: Int, data: Intent?) {
-        Log.e("aqui", resul.toString())
-        if (codigo == Activity.RESULT_OK) {
-            if (resul == CODIGOA) {
-
-                val nombre = data!!.extras.getString("Nombre")
-                val direccion = data.extras.getString("Direccion")
-                val movil = data.extras.getString("Movil")
-                val telefono = data.extras.getString("Telefono")
-                val correo = data.extras.getString("Correo")
-
-                agendaDB!!.insertarContacto(nombre, direccion, movil, telefono, correo)
-                rellenaLista()
-                agendaAdapter!!.notifyDataSetChanged()
-
-            } else {
-                val nombre = data!!.extras.getString("Nombre")
-                val direccion = data.extras.getString("Direccion")
-                val movil = data.extras.getString("Movil")
-                val telefono = data.extras.getString("Telefono")
-                val correo = data.extras.getString("Correo")
-                val mid = data.extras.getInt("ID")
-
-                agendaDB!!.modificarContacto(mid, nombre, direccion, movil, telefono, correo)
-                contactos[iDAct] = Contacto(mid, nombre, direccion, movil, telefono, correo)
-                agendaAdapter!!.notifyDataSetChanged()
-            }
-
-        }
-    }
-
-
-    override fun onRequestPermissionsResult(requestCode: Int,
-                                            permissions: Array<String>, grantResults: IntArray) {
-        val t1: Toast
-
-
-        when (requestCode) {
-            MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE ->
-
-                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    t1 = Toast.makeText(this, "permisos de escritura concedidios", Toast.LENGTH_LONG)
-                    t1.show()
-                } else {
-                    val t = Toast.makeText(this, "No se han concedido los permisos necesarios", Toast.LENGTH_LONG)
-                    t.show()
-                    comprobarPermisos()
-                }
-        }
-    }
-
-    internal fun comprobarPermisos() {
-        val permisos = arrayOf(Manifest.permission.READ_CALL_LOG, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CALL_PHONE)
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            Toast.makeText(this, "This version is not Android 6 or later " + Build.VERSION.SDK_INT, Toast.LENGTH_LONG).show()
-        } else {
-            if ((ContextCompat.checkSelfPermission(this,
-                            permisos[1]) != PackageManager.PERMISSION_GRANTED) || (ContextCompat.checkSelfPermission(this,
-                            permisos[2]) != PackageManager.PERMISSION_GRANTED) ){
-                when {
-                    ActivityCompat.shouldShowRequestPermissionRationale(this,
-                            permisos[1]) -> showSnackBar("escritura en SD")
-                    ActivityCompat.shouldShowRequestPermissionRationale(this,
-                            permisos[2]) -> showSnackBar("callPhone")
-                    else -> requestPermissions(
-                            arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CALL_PHONE), MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE)
-                }
-            } else {
-                ActivityCompat.requestPermissions(this,
-                        arrayOf(permisos[1], permisos[2]), MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE)
             }
         }
     }
 
-    private fun showSnackBar(texto: String) {
-        Snackbar.make(findViewById(R.id.constrain_contacto), "conceder permisos de $texto", Snackbar.LENGTH_INDEFINITE)
-                .setAction("Configuración") { openSettings() }
-                .addCallback(object : Snackbar.Callback() {
-                    override fun onDismissed(snackbar: Snackbar?, event: Int) {
-                        super.onDismissed(snackbar, event)
-                        if (event != Snackbar.Callback.DISMISS_EVENT_ACTION) {
+    override fun onBackStackChanged() {
+         if (supportFragmentManager.backStackEntryCount > 0) {
+            val currentFragmentTag = supportFragmentManager.getBackStackEntryAt(supportFragmentManager.backStackEntryCount - 1).name
 
-                            comprobarPermisos()
-                        }
-                    }
-                }).show()
-    }
+             if (currentFragmentTag == "fragmentPrincipal"){
+                 val fragmentTagLast = supportFragmentManager.getBackStackEntryAt(supportFragmentManager.backStackEntryCount - 2).name
 
-    private fun openSettings() {
-        val intent = Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-        intent.data = Uri.parse("package:$packageName")
-        startActivityForResult(intent, CODIGOA)
-    }
+                 if(fragmentTagLast ==  "fragmentMostrar"){
+                     val actualFragment = supportFragmentManager.findFragmentByTag(currentFragmentTag) as AgendaFragment
+                     val bundle = actualFragment.arguments!!
 
-    companion object {
-        val CODIGOA = 12
-        val CODIGOM = 13
-        val ARCHIVO = "contactos.CNT"
-        const val MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 1
+                     actualFragment.onReturnFromBackStack(13, Activity.RESULT_OK, bundle)
+
+                 }else if(fragmentTagLast == "fragmentCrear"){
+                     val actualFragment = supportFragmentManager.findFragmentByTag(currentFragmentTag) as AgendaFragment
+                     val bundle = actualFragment.arguments!!
+
+                     actualFragment.onReturnFromBackStack(12, Activity.RESULT_OK, bundle)
+                 }
+             }
+        }
     }
 }

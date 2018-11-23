@@ -27,10 +27,11 @@ class AgendaBaseDatos(context: Context) : SQLiteOpenHelper(context, NOMBRE_DB, n
     }
 
 
-    fun insertarContacto(nombre: String, direccion: String, movil:String, telefono:String, correo:String) {
+    fun insertarContacto(id: Int, nombre: String, direccion: String, movil:String, telefono:String, correo:String) {
 
         val db = this.writableDatabase
         val values = ContentValues()
+        values.put("_id", id)
         values.put("nombre", nombre)
         values.put("direccion", direccion)
         values.put("movil", movil)
@@ -155,7 +156,7 @@ class AgendaBaseDatos(context: Context) : SQLiteOpenHelper(context, NOMBRE_DB, n
         private const val VERSION_DB = 1
         private const val NOMBRE_DB = "contactosDB.db"
         private const val TABLA_CONTACTOS = "CREATE TABLE contactos " +
-                "(_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT," +
+                "(_id INTEGER NOT NULL PRIMARY KEY," +
                 " nombre VARCHAR(100) , direccion VARCHAR(100), movil VARCHAR(10), telefono VARCHAR(10), correo VARCHAR(100) )"
     }
 }

@@ -1,28 +1,27 @@
 package com.example.alejandro.agenda
 
+
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.support.design.widget.FloatingActionButton
 import android.support.design.widget.TextInputLayout
+import android.support.v4.app.Fragment
 import android.support.v7.widget.Toolbar
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.util.Patterns
-import android.view.Menu
-import android.view.MenuItem
-import android.widget.Button
+import android.view.*
 import android.widget.EditText
-import android.widget.Toast
-import org.json.JSONArray
-import java.io.File
-import java.io.IOException
-import java.io.OutputStreamWriter
 import java.util.regex.Pattern
 
-class MostrarContacto : AppCompatActivity() {
+
+
+
+class MostrarContactoFragment : Fragment() {
+
     private lateinit var edNombre: EditText
     private lateinit var edDireccion: EditText
     private lateinit var edMovil: EditText
@@ -35,43 +34,51 @@ class MostrarContacto : AppCompatActivity() {
     private lateinit var tilMovil: TextInputLayout
     private lateinit var tilCorreo: TextInputLayout
 
-    private var id: Int = 0
+    private var idC: Int = 0
     private var nombre: String? = null
     private var direccion: String? = null
     private var movil: String? = null
     private var telefono: String? = null
     private var correo: String? = null
 
+    private var dataPass: AgendaFragment.DataPassListener? = null
+
     private lateinit var toolbar: Toolbar
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_mostrar_contacto)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
+                              savedInstanceState: Bundle?): View? {
+        setHasOptionsMenu(true)
+        val view = inflater.inflate(R.layout.fragment_mostrar_contacto, container, false)
 
-        toolbar = findViewById(R.id.modificarCToolbar)
-        setSupportActionBar(toolbar)
+        toolbar = view.findViewById(R.id.modificarCToolbar)
+        (activity as AgendaActivity).setSupportActionBar(toolbar)
 
-        edNombre = findViewById(R.id.edNombre)
-        edDireccion = findViewById(R.id.edDireccion)
-        edMovil = findViewById(R.id.edMovil)
-        edTelefono = findViewById(R.id.edTelefono)
-        edCorreo = findViewById(R.id.edCorreo)
+        edNombre = view.findViewById(R.id.edNombre)
+        edDireccion = view.findViewById(R.id.edDireccion)
+        edMovil = view.findViewById(R.id.edMovil)
+        edTelefono = view.findViewById(R.id.edTelefono)
+        edCorreo = view.findViewById(R.id.edCorreo)
 
-        tilNombre = findViewById(R.id.til_nombre)
-        tilDireccion = findViewById(R.id.til_direccion)
-        tilTelefono = findViewById(R.id.til_telefono)
-        tilMovil = findViewById(R.id.til_movil)
-        tilCorreo = findViewById(R.id.til_correo)
-
-        val extras = intent.extras
+        tilNombre = view.findViewById(R.id.til_nombre)
+        tilDireccion = view.findViewById(R.id.til_direccion)
+        tilTelefono = view.findViewById(R.id.til_telefono)
+        tilMovil = view.findViewById(R.id.til_movil)
+        tilCorreo = view.findViewById(R.id.til_correo)
 
 
-        id = extras.getInt("ID")
-        nombre = extras.getString("Nombre")
-        direccion = extras.getString("Direccion")
-        movil = extras.getString("Movil")
-        telefono = extras.getString("Telefono")
-        correo = extras.getString("Correo")
+
+        val bundle = this.arguments
+        if (bundle != null) {
+
+
+            idC = bundle.getInt("ID")
+            nombre = bundle.getString("Nombre")
+            direccion = bundle.getString("Direccion")
+            movil = bundle.getString("Movil")
+            telefono = bundle.getString("Telefono")
+            correo = bundle.getString("Correo")
+        }
+
 
         edNombre.setText(nombre)
         edDireccion.setText(direccion)
@@ -82,7 +89,7 @@ class MostrarContacto : AppCompatActivity() {
         edNombre.addTextChangedListener(
                 object : TextWatcher {
                     override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-                        
+
                     }
 
                     override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
@@ -90,7 +97,7 @@ class MostrarContacto : AppCompatActivity() {
                     }
 
                     override fun afterTextChanged(p0: Editable?) {
-                        
+
                     }
 
 
@@ -101,7 +108,7 @@ class MostrarContacto : AppCompatActivity() {
                 object : TextWatcher {
 
                     override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-                        
+
                     }
 
                     override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
@@ -109,7 +116,7 @@ class MostrarContacto : AppCompatActivity() {
                     }
 
                     override fun afterTextChanged(p0: Editable?) {
-                        
+
                     }
 
                 })
@@ -153,11 +160,24 @@ class MostrarContacto : AppCompatActivity() {
                     override fun afterTextChanged(p0: Editable?) {
                     }
                 })
+
+        return view
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.menu_modificar_contacto, menu)
-        return true
+    override fun onAttach(context: Context?) {
+        super.onAttach(context)
+        try {
+            dataPass = context as AgendaFragment.DataPassListener
+        } catch (e: ClassCastException) {
+            throw ClassCastException(context.toString() + " must implement OnImageClickListener")
+        }
+
+    }
+
+
+    override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
+        activity!!.menuInflater.inflate(R.menu.menu_modificar_contacto, menu)
+        super.onCreateOptionsMenu(menu, inflater)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -167,7 +187,7 @@ class MostrarContacto : AppCompatActivity() {
                 return true
             }
             R.id.bAction_llamarC -> {
-                intent = Intent(Intent.ACTION_CALL, Uri.parse("tel:$telefono"))
+                val intent = Intent(Intent.ACTION_CALL, Uri.parse("tel:$telefono"))
                 startActivity (intent)
                 return true
             }
@@ -249,22 +269,24 @@ class MostrarContacto : AppCompatActivity() {
     }
 
     fun devolverResultado(valor: Int) {
-        val i = Intent()
-        i.putExtra("ID", id)
+        val bundle = Bundle()
+
         when (valor) {
             1 -> {
-                i.putExtra("Nombre", edNombre.text.toString())
-                i.putExtra("Direccion", edDireccion.text.toString())
-                i.putExtra("Movil", edMovil.text.toString())
-                i.putExtra("Telefono", edTelefono.text.toString())
-                i.putExtra("Correo", edCorreo.text.toString())
-                setResult(Activity.RESULT_OK, i)
+                bundle.putInt("ID", idC)
+                bundle.putString("Nombre", edNombre.text.toString())
+                bundle.putString("Direccion", edDireccion.text.toString())
+                bundle.putString("Movil", edMovil.text.toString())
+                bundle.putString("Telefono", edTelefono.text.toString())
+                bundle.putString("Correo", edCorreo.text.toString())
+                dataPass!!.passData(bundle, 0)
+
             }
-            else -> setResult(Activity.RESULT_CANCELED, i)
+            else ->{
+                dataPass!!.passData(bundle, 0)
+            }
         }
-
-        finish()
-
-
     }
+
+
 }

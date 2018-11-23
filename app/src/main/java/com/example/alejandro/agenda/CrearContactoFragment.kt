@@ -1,29 +1,25 @@
 package com.example.alejandro.agenda
 
+
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.support.design.widget.TextInputLayout
-import android.support.v7.app.AppCompatActivity
+import android.support.v4.app.Fragment
 import android.support.v7.widget.Toolbar
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Patterns
-import android.view.Menu
-import android.view.MenuItem
+import android.view.*
 import android.view.inputmethod.InputMethodManager
-import android.widget.Button
 import android.widget.EditText
-import android.widget.Toast
-import org.json.JSONArray
-import java.io.File
-import java.io.IOException
-import java.io.OutputStreamWriter
 import java.util.regex.Pattern
 
 
-class CrearContacto : AppCompatActivity() {
+class CrearContactoFragment : Fragment() {
+
+
     private lateinit var nombre: EditText
     private lateinit var direccion: EditText
     private lateinit var movil: EditText
@@ -40,35 +36,38 @@ class CrearContacto : AppCompatActivity() {
 
     private lateinit var toolbar: Toolbar
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    private var dataPass: AgendaFragment.DataPassListener? = null
 
-        val view = this.currentFocus
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
+                              savedInstanceState: Bundle?): View? {
+        setHasOptionsMenu(true)
+        val view = inflater.inflate(R.layout.fragment_crear_contacto, container, false)
+
+        //val view = this.currentFocus
         if (view != null) {
-            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            val imm = activity!!.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.hideSoftInputFromWindow(view.windowToken, 0)
         }
-        setContentView(R.layout.activity_crear_contacto)
 
-        toolbar = findViewById(R.id.crearCToolbar)
-        setSupportActionBar(toolbar)
+        toolbar = view.findViewById(R.id.crearCToolbar)
+        (activity as AgendaActivity).setSupportActionBar(toolbar)
 
-        nombre = findViewById(R.id.crNombre)
-        direccion = findViewById(R.id.crDireccion)
-        movil = findViewById(R.id.crMovil)
-        telefono = findViewById(R.id.crTelefono)
-        correo = findViewById(R.id.crCorreo)
+        nombre = view.findViewById(R.id.crNombre)
+        direccion = view.findViewById(R.id.crDireccion)
+        movil = view.findViewById(R.id.crMovil)
+        telefono = view.findViewById(R.id.crTelefono)
+        correo = view.findViewById(R.id.crCorreo)
 
-        tilNombre = findViewById(R.id.til_nombre)
-        tilDireccion = findViewById(R.id.til_direccion)
-        tilTelefono = findViewById(R.id.til_telefono)
-        tilMovil = findViewById(R.id.til_movil)
-        tilCorreo = findViewById(R.id.til_correo)
+        tilNombre = view.findViewById(R.id.til_nombre)
+        tilDireccion = view.findViewById(R.id.til_direccion)
+        tilTelefono = view.findViewById(R.id.til_telefono)
+        tilMovil = view.findViewById(R.id.til_movil)
+        tilCorreo = view.findViewById(R.id.til_correo)
 
         nombre.addTextChangedListener(
                 object : TextWatcher {
                     override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-                        
+
                     }
 
                     override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
@@ -76,10 +75,10 @@ class CrearContacto : AppCompatActivity() {
                     }
 
                     override fun afterTextChanged(p0: Editable?) {
-                        
+
                     }
 
-                    
+
                 })
 
 
@@ -87,7 +86,7 @@ class CrearContacto : AppCompatActivity() {
                 object : TextWatcher {
 
                     override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-                        
+
                     }
 
                     override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
@@ -95,7 +94,7 @@ class CrearContacto : AppCompatActivity() {
                     }
 
                     override fun afterTextChanged(p0: Editable?) {
-                        
+
                     }
 
                 })
@@ -104,7 +103,7 @@ class CrearContacto : AppCompatActivity() {
                 object : TextWatcher {
 
                     override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-                        
+
                     }
 
                     override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
@@ -112,14 +111,14 @@ class CrearContacto : AppCompatActivity() {
                     }
 
                     override fun afterTextChanged(p0: Editable?) {
-                        
+
                     }
                 })
 
         movil.addTextChangedListener(
                 object : TextWatcher {
                     override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-                        
+
                     }
 
                     override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
@@ -127,14 +126,14 @@ class CrearContacto : AppCompatActivity() {
                     }
 
                     override fun afterTextChanged(p0: Editable?) {
-                        
+
                     }
                 })
 
         correo.addTextChangedListener(
                 object : TextWatcher {
                     override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-                        
+
                     }
 
                     override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
@@ -142,14 +141,26 @@ class CrearContacto : AppCompatActivity() {
                     }
 
                     override fun afterTextChanged(p0: Editable?) {
-                        
+
                     }
                 })
+
+        return view
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.menu_crear_contacto, menu)
-        return true
+    override fun onAttach(context: Context?) {
+        super.onAttach(context)
+        try {
+            dataPass = context as AgendaFragment.DataPassListener
+        } catch (e: ClassCastException) {
+            throw ClassCastException(context.toString() + " must implement OnImageClickListener")
+        }
+
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
+        activity!!.menuInflater.inflate(R.menu.menu_crear_contacto, menu)
+        super.onCreateOptionsMenu(menu, inflater)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -159,7 +170,7 @@ class CrearContacto : AppCompatActivity() {
                 true
             }
             R.id.bAction_cancelarCrC -> {
-                validarDatos(2)
+                validarDatos(0)
 
                 true
             }
@@ -214,12 +225,12 @@ class CrearContacto : AppCompatActivity() {
     }
 
     private fun validarDatos(valor: Int) {
-            val nombre = tilNombre.editText!!.text.toString()
-            val direccion = tilDireccion.editText!!.text.toString()
-            val telefono = tilTelefono.editText!!.text.toString()
-            val movil = tilMovil.editText!!.text.toString()
-            val correo = tilCorreo.editText!!.text.toString()
-
+        val nombre = tilNombre.editText!!.text.toString()
+        val direccion = tilDireccion.editText!!.text.toString()
+        val telefono = tilTelefono.editText!!.text.toString()
+        val movil = tilMovil.editText!!.text.toString()
+        val correo = tilCorreo.editText!!.text.toString()
+        if(valor != 0) {
             val a = esNombreValido(nombre)
             val b = esDireccionValida(direccion)
             val c = esTelefonoValido(telefono)
@@ -229,23 +240,26 @@ class CrearContacto : AppCompatActivity() {
             if (a && b && c && d && e) {
                 devolverResultado(valor)
             }
+        }else{
+            devolverResultado(0)
+        }
+
     }
 
-        //Crea un intent el cual pasa una serie de valores de vuelta a la actividad principal
-        fun devolverResultado(valor: Int) {
-            val i = Intent()
-            if (valor == 1) {
-                setResult(Activity.RESULT_OK, i)
-                i.putExtra("Nombre", nombre.text.toString())
-                i.putExtra("Direccion", direccion.text.toString())
-                i.putExtra("Movil", movil.text.toString())
-                i.putExtra("Telefono", telefono.text.toString())
-                i.putExtra("Correo", correo.text.toString())
-            } else
-                setResult(Activity.RESULT_CANCELED, i)
+    //Crea un intent el cual pasa una serie de valores de vuelta a la actividad principal
+    fun devolverResultado(valor: Int) {
+        val bundle = Bundle()
 
-            finish()
+        if (valor == 1) {
 
+            bundle.putString("Nombre", nombre.text.toString())
+            bundle.putString("Direccion", direccion.text.toString())
+            bundle.putString("Movil", movil.text.toString())
+            bundle.putString("Telefono", telefono.text.toString())
+            bundle.putString("Correo", correo.text.toString())
+            dataPass!!.passData(bundle, 0)
 
-        }
+        } else
+            dataPass!!.passData(bundle, 0)
+    }
 }

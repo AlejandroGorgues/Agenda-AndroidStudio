@@ -6,10 +6,11 @@
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
     android:orientation="vertical"
-    tools:context="com.example.alejandro.agenda.CrearContacto">
+    android:tag="fragmentMostrar"
+    tools:context="com.example.alejandro.agenda.MostrarContacto">
 
     <android.support.v7.widget.Toolbar
-        android:id="@+id/crearCToolbar"
+        android:id="@+id/modificarCToolbar"
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
         android:minHeight="?attr/actionBarSize"
@@ -29,8 +30,8 @@
         android:paddingTop="@dimen/activity_vertical_margin"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         android:orientation="vertical"
-        tools:context="com.example.alejandro.agenda.CrearContacto"
-        tools:showIn="@layout/activity_crear_contacto">
+        tools:context="com.example.alejandro.agenda.MostrarContacto"
+        tools:showIn="@layout/activity_mostrar_contacto">
 
         <LinearLayout
             android:id="@+id/area_nombre"
@@ -55,7 +56,7 @@
                 app:errorEnabled="true">
 
                 <EditText
-                    android:id="@+id/crNombre"
+                    android:id="@+id/edNombre"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:ems="10"
@@ -86,7 +87,7 @@
                 app:errorEnabled="true">
 
                 <EditText
-                    android:id="@+id/crTelefono"
+                    android:id="@+id/edTelefono"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:ems="10"
@@ -116,14 +117,14 @@
                 app:errorEnabled="true">
 
                 <EditText
-                    android:id="@+id/crCorreo"
+                    android:id="@+id/edCorreo"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:ems="10"
                     android:hint="@string/hint_correo"
                     android:inputType="textEmailAddress"
                     android:maxLines="1"
-                     />
+                    />
             </android.support.design.widget.TextInputLayout>
         </LinearLayout>
 
@@ -150,16 +151,15 @@
                 app:errorEnabled="true">
 
                 <EditText
-                    android:id="@+id/crDireccion"
+                    android:id="@+id/edDireccion"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:ems="10"
                     android:hint="@string/hint_direccion"
                     android:inputType="text"
-                    android:maxLines="1" />
+                    android:maxLines="1"/>
             </android.support.design.widget.TextInputLayout>
         </LinearLayout>
-
         <LinearLayout
             android:id="@+id/area_movil"
             android:layout_width="match_parent"
@@ -181,14 +181,15 @@
                 app:errorEnabled="true">
 
                 <EditText
-                    android:id="@+id/crMovil"
+                    android:id="@+id/edMovil"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:ems="10"
                     android:hint="@string/hint_movil"
                     android:inputType="phone"
-                    android:maxLines="1" />
+                    android:maxLines="1"/>
             </android.support.design.widget.TextInputLayout>
         </LinearLayout>
+
     </LinearLayout>
 </LinearLayout>
