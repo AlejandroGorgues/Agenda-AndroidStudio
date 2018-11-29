@@ -15,9 +15,13 @@ import android.support.v4.app.FragmentManager
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
-
-import android.widget.*
 import org.json.JSONArray
+import android.widget.Toast
+import java.io.File
+import java.io.IOException
+import java.io.OutputStreamWriter
+
+
 
 
 class AgendaActivity : AppCompatActivity(), DataPassListener, DataBaseListener {
@@ -28,11 +32,12 @@ class AgendaActivity : AppCompatActivity(), DataPassListener, DataBaseListener {
     private var agendaDB: AgendaBaseDatos? = null
     private var ident: IntArray? = null
     private var contactos: ArrayList<Contacto> = ArrayList()
+    private var telefono: String? = null
+    private var permitCode: Int? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_agenda)
-        comprobarPermisos()
         agendaDB = AgendaBaseDatos(this)
         manager = supportFragmentManager
 
@@ -119,7 +124,9 @@ class AgendaActivity : AppCompatActivity(), DataPassListener, DataBaseListener {
     }
 
     override fun searchDataContact(id: Int): Contacto {
-        return agendaDB!!.buscarContacto(id)
+        val contactoAux = agendaDB!!.buscarContacto(id)
+        telefono = contactoAux.telefono
+        return contactoAux
     }
 
     override fun createContact(nombre: String, direccion: String, movil: String, telefono: String, correo: String) {
@@ -130,8 +137,19 @@ class AgendaActivity : AppCompatActivity(), DataPassListener, DataBaseListener {
         agendaDB!!.borrarContacto(id)
     }
 
-    override fun getJsonData(): JSONArray {
-        return agendaDB!!.getJson()
+    override fun exportJsonData() {
+        permitCode = 1
+        comprobarPermisos()
+    }
+
+    override fun importJsonData() {
+        permitCode = 2
+        comprobarPermisos()
+    }
+
+    override fun callContact() {
+        permitCode = 3
+       comprobarPermisos()
     }
 
     override fun databaseInstance(): AgendaBaseDatos {
@@ -140,43 +158,110 @@ class AgendaActivity : AppCompatActivity(), DataPassListener, DataBaseListener {
 
     override fun onRequestPermissionsResult(requestCode: Int,
                                             permissions: Array<String>, grantResults: IntArray) {
-        val t1: Toast
-
 
         when (requestCode) {
             MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE ->
 
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    t1 = Toast.makeText(this, "permisos de escritura concedidios", Toast.LENGTH_LONG)
-                    t1.show()
+
+                    try {
+
+                        val miArchivo = OutputStreamWriter(openFileOutput(AgendaFragment.ARCHIVO, Activity.MODE_PRIVATE))
+                        miArchivo.write(agendaDB!!.getJson().toString())
+                        miArchivo.flush()
+                        miArchivo.close()
+                    } catch (e: IOException) {
+                        val t = Toast.makeText(this, "Error de E/S", Toast.LENGTH_LONG)
+                        t.show()
+                    }
                 } else {
-                    val t = Toast.makeText(this, "No se han concedido los permisos necesarios", Toast.LENGTH_LONG)
-                    t.show()
+                    Toast.makeText(this, "No se han concedido los permisos necesarios", Toast.LENGTH_LONG).show()
+                    permitCode = 1
+                    comprobarPermisos()
+                }
+
+            MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE ->
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    try {
+                        val jsonString = File(filesDir.toString() + "/" + AgendaFragment.ARCHIVO).inputStream().readBytes().toString(Charsets.UTF_8)
+                        val objArray = JSONArray(jsonString)
+                        for (i in 0..(objArray.length() - 1)) {
+
+                            val obj = objArray.getJSONObject(i)
+                            val nombre = obj.getString("nombre")
+                            val direccion = obj.getString("direccion")
+                            val movil = obj.getString("movil")
+                            val telefono = obj.getString("telefono")
+                            val correo = obj.getString("correo")
+                            createContact(nombre, direccion, movil, telefono, correo)
+                        }
+                    } catch (e: IOException) {
+                        val t = Toast.makeText(this, "Error de E/S", Toast.LENGTH_LONG)
+                        t.show()
+                    }
+                } else {
+                    Toast.makeText(this, "No se han concedido los permisos necesarios", Toast.LENGTH_LONG).show()
+                    permitCode = 2
+                    comprobarPermisos()
+                }
+
+            MY_PERMISSIONS_REQUEST_CALL_PHONE ->
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    val phoneNumber = String.format("tel: %s", telefono)
+                    val dialIntent = Intent(Intent.ACTION_DIAL)
+                    dialIntent.data = Uri.parse(phoneNumber)
+                    startActivity(dialIntent)
+                }else {
+                    Toast.makeText(this, "No se han concedido los permisos necesarios", Toast.LENGTH_LONG).show()
+                    permitCode = 3
                     comprobarPermisos()
                 }
         }
     }
 
+
+
     internal fun comprobarPermisos() {
-        val permisos = arrayOf(Manifest.permission.READ_CALL_LOG, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CALL_PHONE)
+        var permiso: String? = null
+        //val permisos = arrayOf(Manifest.permission.READ_CALL_LOG, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CALL_PHONE)
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             Toast.makeText(this, "This version is not Android 6 or later " + Build.VERSION.SDK_INT, Toast.LENGTH_LONG).show()
         } else {
-            if ((ContextCompat.checkSelfPermission(this,
-                            permisos[1]) != PackageManager.PERMISSION_GRANTED) || (ContextCompat.checkSelfPermission(this,
-                            permisos[2]) != PackageManager.PERMISSION_GRANTED) ){
-                when {
-                    ActivityCompat.shouldShowRequestPermissionRationale(this,
-                            permisos[1]) -> showSnackBar("escritura en SD")
-                    ActivityCompat.shouldShowRequestPermissionRationale(this,
-                            permisos[2]) -> showSnackBar("callPhone")
-                    else -> requestPermissions(
-                            arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CALL_PHONE), MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE)
+            if(permitCode == 1){
+                permiso = Manifest.permission.WRITE_EXTERNAL_STORAGE
+                if (ContextCompat.checkSelfPermission(this, permiso) != PackageManager.PERMISSION_GRANTED) {
+                    if (ActivityCompat.shouldShowRequestPermissionRationale(this, permiso)) {
+                        showSnackBar("escritura en SD")
+                    } else {
+                        requestPermissions(arrayOf(permiso), permitCode!!)
+                    }
+                } else {
+                    ActivityCompat.requestPermissions(this, arrayOf(permiso), permitCode!!)
                 }
-            } else {
-                ActivityCompat.requestPermissions(this,
-                        arrayOf(permisos[1], permisos[2]), MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE)
+            }else if (permitCode == 2){
+                permiso = Manifest.permission.READ_EXTERNAL_STORAGE
+                if (ContextCompat.checkSelfPermission(this, permiso) != PackageManager.PERMISSION_GRANTED) {
+                    if (ActivityCompat.shouldShowRequestPermissionRationale(this, permiso)) {
+                        showSnackBar("lectura en SD")
+                    } else {
+                        requestPermissions(arrayOf(permiso), permitCode!!)
+                    }
+                } else {
+                    ActivityCompat.requestPermissions(this, arrayOf(permiso), permitCode!!)
+                }
+            }else{
+                permiso = Manifest.permission.CALL_PHONE
+                if (ContextCompat.checkSelfPermission(this, permiso) != PackageManager.PERMISSION_GRANTED) {
+                    if (ActivityCompat.shouldShowRequestPermissionRationale(this, permiso)) {
+                        showSnackBar("llamada")
+                    } else {
+                        requestPermissions(arrayOf(permiso), permitCode!!)
+                    }
+                } else {
+                    ActivityCompat.requestPermissions(this, arrayOf(permiso), permitCode!!)
+                }
             }
+
         }
     }
 
@@ -194,9 +279,7 @@ class AgendaActivity : AppCompatActivity(), DataPassListener, DataBaseListener {
                 }).show()
     }
 
-    override fun getPackageName(): String {
-        return this.javaClass.name.replace("." + this.javaClass.simpleName, "")
-    }
+
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -210,8 +293,14 @@ class AgendaActivity : AppCompatActivity(), DataPassListener, DataBaseListener {
         startActivityForResult(intent, CODIGORESULT)
     }
 
+    override fun getPackageName(): String {
+        return this.javaClass.name.replace("." + this.javaClass.simpleName, "")
+    }
+
     companion object {
         const val CODIGORESULT = 10
         const val MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 1
+        const val MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 2
+        const val MY_PERMISSIONS_REQUEST_CALL_PHONE = 3
     }
 }

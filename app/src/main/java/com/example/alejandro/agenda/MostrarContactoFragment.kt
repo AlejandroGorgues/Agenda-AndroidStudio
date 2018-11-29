@@ -178,8 +178,9 @@ class MostrarContactoFragment : Fragment() {
                 return true
             }
             R.id.bAction_llamarC -> {
-                val intent = Intent(Intent.ACTION_CALL, Uri.parse("tel:$telefono"))
-                startActivity (intent)
+                activityDataBaseListener.callContact()
+                //val intent = Intent(Intent.ACTION_CALL, Uri.parse("tel:$telefono"))
+                //startActivity (intent)
                 return true
             }
             R.id.bAction_cancelarModC -> {

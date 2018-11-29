@@ -63,10 +63,8 @@ class AgendaFragment : Fragment()  {
             popupMenu.setOnMenuItemClickListener { item ->
                 when {
                     item.itemId == R.id.llamarC -> {
-                        val phoneNumber = String.format("tel: %s", activityDataBaseListener.searchDataContact(iDAct).telefono)
-                        val dialIntent = Intent(Intent.ACTION_DIAL)
-                        dialIntent.data = Uri.parse(phoneNumber)
-                        startActivity(dialIntent)
+                        activityDataBaseListener.searchDataContact(iDAct)
+                        activityDataBaseListener.callContact()
                         true
                     }
                     item.itemId == R.id.modificarC -> {
@@ -112,41 +110,15 @@ class AgendaFragment : Fragment()  {
                 return true
             }
             R.id.action_exportarJSON -> {
-                try {
-
-                    val miArchivo = OutputStreamWriter(activity!!.openFileOutput(ARCHIVO, Activity.MODE_PRIVATE))
-                    miArchivo.write(activityDataBaseListener.getJsonData().toString())
-                    miArchivo.flush()
-                    miArchivo.close()
-                } catch (e: IOException) {
-                    val t = Toast.makeText(activity, "Error de E/S", Toast.LENGTH_LONG)
-                    t.show()
-                }
+                activityDataBaseListener.exportJsonData()
 
                 return true
             }
             R.id.action_importarJSON -> {
-                try {
-                    val jsonString =  File(activity!!.filesDir.toString() + "/"+ARCHIVO ).inputStream().readBytes().toString(Charsets.UTF_8)
-                    val objArray = JSONArray(jsonString)
-                    for(i in 0..(objArray.length()-1)){
 
-                        val obj = objArray.getJSONObject(i)
-                        val nombre = obj.getString("nombre")
-                        val direccion = obj.getString("direccion")
-                        val movil = obj.getString("movil")
-                        val telefono = obj.getString("telefono")
-                        val correo = obj.getString("correo")
-                        activityDataBaseListener.createContact(nombre,direccion,movil,telefono,correo)
-                    }
-                    rellenaLista()
-                    agendaAdapter!!.notifyDataSetChanged()
-
-                } catch (e: IOException) {
-                    val t = Toast.makeText(activity, "Error de E/S", Toast.LENGTH_LONG)
-                    t.show()
-                }
-
+                activityDataBaseListener.importJsonData()
+                rellenaLista()
+                agendaAdapter!!.notifyDataSetChanged()
 
                 return true
             }
