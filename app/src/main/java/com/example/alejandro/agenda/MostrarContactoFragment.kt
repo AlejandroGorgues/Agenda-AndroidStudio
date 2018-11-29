@@ -1,8 +1,5 @@
 package com.example.alejandro.agenda
 
-
-import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -41,7 +38,9 @@ class MostrarContactoFragment : Fragment() {
     private var telefono: String? = null
     private var correo: String? = null
 
-    private var dataPass: AgendaFragment.DataPassListener? = null
+
+    private lateinit var activityDataBaseListener: DataBaseListener
+    private lateinit var activityPassData: DataPassListener
 
     private lateinit var toolbar: Toolbar
 
@@ -49,6 +48,9 @@ class MostrarContactoFragment : Fragment() {
                               savedInstanceState: Bundle?): View? {
         setHasOptionsMenu(true)
         val view = inflater.inflate(R.layout.fragment_mostrar_contacto, container, false)
+
+        activityDataBaseListener = activity as DataBaseListener
+        activityPassData = activity as DataPassListener
 
         toolbar = view.findViewById(R.id.modificarCToolbar)
         (activity as AgendaActivity).setSupportActionBar(toolbar)
@@ -164,17 +166,6 @@ class MostrarContactoFragment : Fragment() {
         return view
     }
 
-    override fun onAttach(context: Context?) {
-        super.onAttach(context)
-        try {
-            dataPass = context as AgendaFragment.DataPassListener
-        } catch (e: ClassCastException) {
-            throw ClassCastException(context.toString() + " must implement OnImageClickListener")
-        }
-
-    }
-
-
     override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
         activity!!.menuInflater.inflate(R.menu.menu_modificar_contacto, menu)
         super.onCreateOptionsMenu(menu, inflater)
@@ -271,22 +262,19 @@ class MostrarContactoFragment : Fragment() {
     fun devolverResultado(valor: Int) {
         val bundle = Bundle()
 
+
         when (valor) {
             1 -> {
-                bundle.putInt("ID", idC)
-                bundle.putString("Nombre", edNombre.text.toString())
-                bundle.putString("Direccion", edDireccion.text.toString())
-                bundle.putString("Movil", edMovil.text.toString())
-                bundle.putString("Telefono", edTelefono.text.toString())
-                bundle.putString("Correo", edCorreo.text.toString())
-                dataPass!!.passData(bundle, 0)
+                activityDataBaseListener.modifiedDataContact(idC, edNombre.text.toString(), edDireccion.text.toString(), edMovil.text.toString(), edTelefono.text.toString(), edCorreo.text.toString())
+                activityPassData.passData(bundle, 0)
 
             }
             else ->{
-                dataPass!!.passData(bundle, 0)
+                activityPassData.passData(bundle, 0)
             }
         }
     }
+
 
 
 }

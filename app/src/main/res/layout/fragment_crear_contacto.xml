@@ -7,7 +7,7 @@
     android:fitsSystemWindows="true"
     android:orientation="vertical"
     android:tag="fragmentCrear"
-    tools:context="com.example.alejandro.agenda.CrearContacto">
+    tools:context="com.example.alejandro.agenda.CrearContactoFragment">
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/crearCToolbar"
@@ -31,7 +31,7 @@
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         android:orientation="vertical"
         tools:context="com.example.alejandro.agenda.CrearContacto"
-        tools:showIn="@layout/activity_crear_contacto">
+        tools:showIn="@layout/activity_agenda">
 
         <LinearLayout
             android:id="@+id/area_nombre"
@@ -53,9 +53,10 @@
                 android:layout_marginStart="32dp"
                 app:counterEnabled="true"
                 app:counterMaxLength="30"
+                app:hintTextAppearance="@style/TextAppearance.App.TextInputLayout"
                 app:errorEnabled="true">
 
-                <EditText
+                <android.support.design.widget.TextInputEditText
                     android:id="@+id/crNombre"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -84,9 +85,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="32dp"
+                app:hintTextAppearance="@style/TextAppearance.App.TextInputLayout"
                 app:errorEnabled="true">
 
-                <EditText
+                <android.support.design.widget.TextInputEditText
                     android:id="@+id/crTelefono"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -114,9 +116,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="32dp"
+                app:hintTextAppearance="@style/TextAppearance.App.TextInputLayout"
                 app:errorEnabled="true">
 
-                <EditText
+                <android.support.design.widget.TextInputEditText
                     android:id="@+id/crCorreo"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -148,9 +151,10 @@
                 android:layout_marginStart="32dp"
                 app:counterEnabled="true"
                 app:counterMaxLength="60"
+                app:hintTextAppearance="@style/TextAppearance.App.TextInputLayout"
                 app:errorEnabled="true">
 
-                <EditText
+                <android.support.design.widget.TextInputEditText
                     android:id="@+id/crDireccion"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -179,9 +183,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="32dp"
+                app:hintTextAppearance="@style/TextAppearance.App.TextInputLayout"
                 app:errorEnabled="true">
 
-                <EditText
+                <android.support.design.widget.TextInputEditText
                     android:id="@+id/crMovil"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

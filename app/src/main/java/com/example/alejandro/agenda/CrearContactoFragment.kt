@@ -1,9 +1,7 @@
 package com.example.alejandro.agenda
 
 
-import android.app.Activity
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.support.design.widget.TextInputLayout
 import android.support.v4.app.Fragment
@@ -36,12 +34,16 @@ class CrearContactoFragment : Fragment() {
 
     private lateinit var toolbar: Toolbar
 
-    private var dataPass: AgendaFragment.DataPassListener? = null
+    private lateinit var activityDataBaseListener: DataBaseListener
+    private lateinit var activityPassData: DataPassListener
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         setHasOptionsMenu(true)
         val view = inflater.inflate(R.layout.fragment_crear_contacto, container, false)
+
+        activityDataBaseListener = activity as DataBaseListener
+        activityPassData = activity as DataPassListener
 
         //val view = this.currentFocus
         if (view != null) {
@@ -148,16 +150,6 @@ class CrearContactoFragment : Fragment() {
         return view
     }
 
-    override fun onAttach(context: Context?) {
-        super.onAttach(context)
-        try {
-            dataPass = context as AgendaFragment.DataPassListener
-        } catch (e: ClassCastException) {
-            throw ClassCastException(context.toString() + " must implement OnImageClickListener")
-        }
-
-    }
-
     override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
         activity!!.menuInflater.inflate(R.menu.menu_crear_contacto, menu)
         super.onCreateOptionsMenu(menu, inflater)
@@ -250,16 +242,13 @@ class CrearContactoFragment : Fragment() {
     fun devolverResultado(valor: Int) {
         val bundle = Bundle()
 
+
         if (valor == 1) {
 
-            bundle.putString("Nombre", nombre.text.toString())
-            bundle.putString("Direccion", direccion.text.toString())
-            bundle.putString("Movil", movil.text.toString())
-            bundle.putString("Telefono", telefono.text.toString())
-            bundle.putString("Correo", correo.text.toString())
-            dataPass!!.passData(bundle, 0)
+            activityDataBaseListener.createContact(nombre.text.toString(),direccion.text.toString(),movil.text.toString(),telefono.text.toString(),correo.text.toString())
+            activityPassData.passData(bundle, 0)
 
         } else
-            dataPass!!.passData(bundle, 0)
+            activityPassData.passData(bundle, 0)
     }
 }
