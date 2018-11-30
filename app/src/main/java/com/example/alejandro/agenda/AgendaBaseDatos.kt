@@ -155,7 +155,7 @@ class AgendaBaseDatos(context: Context) : SQLiteOpenHelper(context, NOMBRE_DB, n
         private const val VERSION_DB = 1
         private const val NOMBRE_DB = "contactosDB.db"
         private const val TABLA_CONTACTOS = "CREATE TABLE contactos " +
-                "(_id INTEGER NOT NULL AUTOINCREMENT PRIMARY KEY," +
+                "(_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT," +
                 " nombre VARCHAR(100) , direccion VARCHAR(100), movil VARCHAR(10), telefono VARCHAR(10), correo VARCHAR(100) )"
     }
 }

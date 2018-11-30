@@ -1,7 +1,5 @@
 package com.example.alejandro.agenda
 
-import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.support.design.widget.TextInputLayout
 import android.support.v4.app.Fragment
@@ -179,8 +177,6 @@ class MostrarContactoFragment : Fragment() {
             }
             R.id.bAction_llamarC -> {
                 activityDataBaseListener.callContact()
-                //val intent = Intent(Intent.ACTION_CALL, Uri.parse("tel:$telefono"))
-                //startActivity (intent)
                 return true
             }
             R.id.bAction_cancelarModC -> {
@@ -194,7 +190,7 @@ class MostrarContactoFragment : Fragment() {
     private fun esNombreValido(nombre: String): Boolean {
         val patron = Pattern.compile("^[a-zA-Z ]+$")
         if (!patron.matcher(nombre).matches() || nombre.length > 30) {
-            tilNombre.error = "Nombre inválido"
+            tilNombre.error = R.string.nombreInvalido.toString()
             return false
         } else {
             tilNombre.error = null
@@ -206,7 +202,7 @@ class MostrarContactoFragment : Fragment() {
     private fun esDireccionValida(nombre: String): Boolean {
         val patron = Pattern.compile("^[a-zA-Z0-9]+$")
         if (!patron.matcher(nombre).matches() || nombre.length > 30) {
-            tilNombre.error = "Nombre inválido"
+            tilNombre.error = R.string.direccionInvalido.toString()
             return false
         } else {
             tilNombre.error = null
@@ -217,7 +213,7 @@ class MostrarContactoFragment : Fragment() {
 
     private fun esTelefonoValido(telefono: String): Boolean {
         if (!Patterns.PHONE.matcher(telefono).matches()) {
-            tilTelefono.error = "Teléfono inválido"
+            tilTelefono.error = R.string.telefonoInvalido.toString()
             return false
         } else {
             tilTelefono.error = null
@@ -228,7 +224,7 @@ class MostrarContactoFragment : Fragment() {
 
     private fun esCorreoValido(correo: String): Boolean {
         if (!Patterns.EMAIL_ADDRESS.matcher(correo).matches()) {
-            tilCorreo.error = "Correo electrónico inválido"
+            tilCorreo.error = R.string.correoInvalido.toString()
             return false
         } else {
             tilCorreo.error = null
@@ -268,7 +264,6 @@ class MostrarContactoFragment : Fragment() {
             1 -> {
                 activityDataBaseListener.modifiedDataContact(idC, edNombre.text.toString(), edDireccion.text.toString(), edMovil.text.toString(), edTelefono.text.toString(), edCorreo.text.toString())
                 activityPassData.passData(bundle, 0)
-
             }
             else ->{
                 activityPassData.passData(bundle, 0)

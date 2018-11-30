@@ -1,9 +1,7 @@
-package es.upm.etsisi.mirecyclerview
+package com.example.alejandro.agenda
 
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.helper.ItemTouchHelper
-import com.example.alejandro.agenda.AgendaAdapter
-import com.example.alejandro.agenda.ContactoTouchAdapter
 
 
 class SwipeContactoTouch(private val contactoTouchAdapter: ContactoTouchAdapter) : ItemTouchHelper.Callback() {
@@ -17,7 +15,6 @@ class SwipeContactoTouch(private val contactoTouchAdapter: ContactoTouchAdapter)
     }
 
     override fun getMovementFlags(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {
-        //https://developer.android.com/reference/android/support/v7/widget/helper/ItemTouchHelper.Callback.html#getMovementFlags(android.support.v7.widget.RecyclerView,%20android.support.v7.widget.RecyclerView.ViewHolder)
         // direccion en la que un elemento puede ser arrastrado
         val dragFlags = ItemTouchHelper.UP or ItemTouchHelper.DOWN
         // direccion en la que un elemento puede hacer Swipe
@@ -44,6 +41,4 @@ class SwipeContactoTouch(private val contactoTouchAdapter: ContactoTouchAdapter)
     fun getSwipeEscapeVelocity(defaultValue: Float): Float {
         return defaultValue * 300
     }
-
-    //https://developer.android.com/reference/android/support/v7/widget/helper/ItemTouchHelper.Callback.html
 }

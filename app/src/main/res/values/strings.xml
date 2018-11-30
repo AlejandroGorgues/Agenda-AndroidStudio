@@ -1,13 +1,45 @@
 <resources>
     <string name="app_name">Agenda</string>
     <string name="action_settings">Settings</string>
+
     <string name="hint_nombre">Nombre</string>
     <string name="hint_telefono">Teléfono</string>
     <string name="hint_correo">Correo</string>
     <string name="hint_direccion">Direccion</string>
     <string name="hint_movil">Movil</string>
+
+    <string name="nombre">Nombre</string>
+    <string name="telefono">Teléfono</string>
+    <string name="correo">Correo</string>
+    <string name="direccion">Direccion</string>
+    <string name="movil">Movil</string>
+
+    <string name="nombreInvalido">Nombre inválido</string>
+    <string name="telefonoInvalido">Teléfono inválido</string>
+    <string name="correoInvalido">Correo inválido</string>
+    <string name="direccionInvalido">Direccion inválido</string>
+    <string name="movilInvalido">Movil inválido</string>
+
+    <string name="addContacto">Añadir un contacto</string>
+    <string name="exportJSON">Exportar contactos a JSON</string>
+    <string name="importJSON">Importar contactos en formato JSON</string>
+
+    <string name="titleCrear">Crear</string>
+    <string name="titleCancelar">Cancelar</string>
+
+    <string name="titleLlamar">Llamar</string>
+    <string name="titleModificar">Modificar</string>
+    <string name="titleEliminar">Eliminar</string>
+
+    <string name="errorEscritura">No se han concedido los permisos de ecritura</string>
+    <string name="errorLectura">No se han concedido los permisos de lectura</string>
+    <string name="errorLlamada">No se han concedido los permisos de llamada</string>
+    <string name="errorExportar">Error, no se ha podido exportar a ningun archivo</string>
+    <string name="errorImportar">Error, no se ha podido importar ningun archivo</string>
+
+
     <string name="accion_cancelar">Cancelar</string>
     <string name="accion_aceptar">Aceptar</string>
     <string name="puntosVerticales">&#8942;</string>
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+
 </resources>

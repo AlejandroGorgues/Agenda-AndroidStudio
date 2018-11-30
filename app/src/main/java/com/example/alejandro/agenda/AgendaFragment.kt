@@ -1,9 +1,5 @@
 package com.example.alejandro.agenda
 
-
-import android.app.Activity
-import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.support.design.widget.FloatingActionButton
 import android.support.v4.app.Fragment
@@ -11,16 +7,10 @@ import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.Toolbar
 import android.support.v7.widget.helper.ItemTouchHelper
 import android.widget.PopupMenu
-import es.upm.etsisi.mirecyclerview.SwipeContactoTouch
 import android.support.v7.widget.DefaultItemAnimator
 import android.support.v7.widget.LinearLayoutManager
 import android.util.Log
 import android.view.*
-import android.widget.Toast
-import org.json.JSONArray
-import java.io.File
-import java.io.IOException
-import java.io.OutputStreamWriter
 
 
 class AgendaFragment : Fragment()  {
@@ -158,8 +148,6 @@ class AgendaFragment : Fragment()  {
     }
 
     companion object {
-        const val CODIGOA = 12
-        const val CODIGOM = 13
         const val ARCHIVO = "contactos.CNT"
     }
 

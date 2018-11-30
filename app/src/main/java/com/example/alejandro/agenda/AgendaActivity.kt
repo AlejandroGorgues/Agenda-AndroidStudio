@@ -21,12 +21,7 @@ import java.io.File
 import java.io.IOException
 import java.io.OutputStreamWriter
 
-
-
-
 class AgendaActivity : AppCompatActivity(), DataPassListener, DataBaseListener {
-
-
 
     private var manager: FragmentManager? = null
     private var agendaDB: AgendaBaseDatos? = null
@@ -34,6 +29,8 @@ class AgendaActivity : AppCompatActivity(), DataPassListener, DataBaseListener {
     private var contactos: ArrayList<Contacto> = ArrayList()
     private var telefono: String? = null
     private var permitCode: Int? = null
+    private var permiso: String? = null
+    private var tipo: Int? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,7 +41,7 @@ class AgendaActivity : AppCompatActivity(), DataPassListener, DataBaseListener {
         val transaction = manager!!.beginTransaction()
         val fragmentLista = AgendaFragment()
 
-        transaction.add(R.id.agendaActivityLayout, fragmentLista, "fragmentPrincipal")
+        transaction.add(R.id.agendaActivityLayout, fragmentLista, fragmentPrincipal)
         transaction.addToBackStack(null)
         transaction.commit()
 
@@ -57,42 +54,42 @@ class AgendaActivity : AppCompatActivity(), DataPassListener, DataBaseListener {
         val fragmentReplace: Fragment
             when (fragment) {
                 0 -> {
-                    fragmentReplace = if( manager!!.findFragmentByTag("\"fragmentPrincipal\"") != null) {
-                        manager!!.findFragmentByTag("\"fragmentPrincipal\"") as AgendaFragment
+                    fragmentReplace = if( manager!!.findFragmentByTag(fragmentPrincipal) != null) {
+                        manager!!.findFragmentByTag(fragmentPrincipal) as AgendaFragment
                     }else{
                         AgendaFragment()
                     }
 
                     fragmentReplace.arguments = data
-                    transaction.replace(R.id.agendaActivityLayout, fragmentReplace, "fragmentPrincipal")
+                    transaction.replace(R.id.agendaActivityLayout, fragmentReplace, fragmentPrincipal)
                     transaction.addToBackStack(null)
 
                 }
                 1 -> {
 
-                    fragmentReplace = if( manager!!.findFragmentByTag("\"fragmentCrear\"") != null) {
-                        manager!!.findFragmentByTag("\"fragmentCrear\"") as CrearContactoFragment
+                    fragmentReplace = if( manager!!.findFragmentByTag(fragmentCrear) != null) {
+                        manager!!.findFragmentByTag(fragmentCrear) as CrearContactoFragment
                     }else{
                         CrearContactoFragment()
                     }
 
                     fragmentReplace.arguments = data
-                    transaction.replace(R.id.agendaActivityLayout, fragmentReplace, "fragmentCrear")
+                    transaction.replace(R.id.agendaActivityLayout, fragmentReplace, fragmentCrear)
                     transaction.addToBackStack(null)
 
                 }
                 else -> {
 
 
-                    fragmentReplace = if( manager!!.findFragmentByTag("\"fragmentMostrar\"") != null) {
-                        manager!!.findFragmentByTag("\"fragmentMostrar\"") as MostrarContactoFragment
+                    fragmentReplace = if( manager!!.findFragmentByTag(fragmentMostrar) != null) {
+                        manager!!.findFragmentByTag(fragmentMostrar) as MostrarContactoFragment
                     }else{
                         MostrarContactoFragment()
                     }
 
                     fragmentReplace.arguments = data
 
-                    transaction.replace(R.id.agendaActivityLayout, fragmentReplace, "fragmentMostrar")
+                    transaction.replace(R.id.agendaActivityLayout, fragmentReplace, fragmentMostrar)
                     transaction.addToBackStack(null)
 
 
@@ -139,16 +136,19 @@ class AgendaActivity : AppCompatActivity(), DataPassListener, DataBaseListener {
 
     override fun exportJsonData() {
         permitCode = 1
+        permiso = Manifest.permission.WRITE_EXTERNAL_STORAGE
         comprobarPermisos()
     }
 
     override fun importJsonData() {
         permitCode = 2
+        permiso = Manifest.permission.READ_EXTERNAL_STORAGE
         comprobarPermisos()
     }
 
     override fun callContact() {
         permitCode = 3
+        permiso = Manifest.permission.CALL_PHONE
        comprobarPermisos()
     }
 
@@ -164,143 +164,101 @@ class AgendaActivity : AppCompatActivity(), DataPassListener, DataBaseListener {
 
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
-                    try {
-
-                        val miArchivo = OutputStreamWriter(openFileOutput(AgendaFragment.ARCHIVO, Activity.MODE_PRIVATE))
-                        miArchivo.write(agendaDB!!.getJson().toString())
-                        miArchivo.flush()
-                        miArchivo.close()
-                    } catch (e: IOException) {
-                        val t = Toast.makeText(this, "Error de E/S", Toast.LENGTH_LONG)
-                        t.show()
-                    }
+                    tipo = 1
+                    metodosPermisos()
                 } else {
-                    Toast.makeText(this, "No se han concedido los permisos necesarios", Toast.LENGTH_LONG).show()
-                    permitCode = 1
-                    comprobarPermisos()
+                    Toast.makeText(this, R.string.errorEscritura, Toast.LENGTH_LONG).show()
                 }
 
             MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE ->
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    try {
-                        val jsonString = File(filesDir.toString() + "/" + AgendaFragment.ARCHIVO).inputStream().readBytes().toString(Charsets.UTF_8)
-                        val objArray = JSONArray(jsonString)
-                        for (i in 0..(objArray.length() - 1)) {
-
-                            val obj = objArray.getJSONObject(i)
-                            val nombre = obj.getString("nombre")
-                            val direccion = obj.getString("direccion")
-                            val movil = obj.getString("movil")
-                            val telefono = obj.getString("telefono")
-                            val correo = obj.getString("correo")
-                            createContact(nombre, direccion, movil, telefono, correo)
-                        }
-                    } catch (e: IOException) {
-                        val t = Toast.makeText(this, "Error de E/S", Toast.LENGTH_LONG)
-                        t.show()
-                    }
+                    tipo = 2
+                    metodosPermisos()
                 } else {
-                    Toast.makeText(this, "No se han concedido los permisos necesarios", Toast.LENGTH_LONG).show()
-                    permitCode = 2
-                    comprobarPermisos()
+                    Toast.makeText(this, R.string.errorLectura, Toast.LENGTH_LONG).show()
                 }
 
             MY_PERMISSIONS_REQUEST_CALL_PHONE ->
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    val phoneNumber = String.format("tel: %s", telefono)
-                    val dialIntent = Intent(Intent.ACTION_DIAL)
-                    dialIntent.data = Uri.parse(phoneNumber)
-                    startActivity(dialIntent)
+                    tipo = 3
+                   metodosPermisos()
                 }else {
-                    Toast.makeText(this, "No se han concedido los permisos necesarios", Toast.LENGTH_LONG).show()
-                    permitCode = 3
-                    comprobarPermisos()
+                    Toast.makeText(this, R.string.errorLlamada, Toast.LENGTH_LONG).show()
                 }
         }
     }
 
 
 
-    internal fun comprobarPermisos() {
-        var permiso: String? = null
-        //val permisos = arrayOf(Manifest.permission.READ_CALL_LOG, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CALL_PHONE)
+    private fun comprobarPermisos() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             Toast.makeText(this, "This version is not Android 6 or later " + Build.VERSION.SDK_INT, Toast.LENGTH_LONG).show()
+            metodosPermisos()
         } else {
-            if(permitCode == 1){
-                permiso = Manifest.permission.WRITE_EXTERNAL_STORAGE
-                if (ContextCompat.checkSelfPermission(this, permiso) != PackageManager.PERMISSION_GRANTED) {
-                    if (ActivityCompat.shouldShowRequestPermissionRationale(this, permiso)) {
-                        showSnackBar("escritura en SD")
-                    } else {
-                        requestPermissions(arrayOf(permiso), permitCode!!)
-                    }
-                } else {
-                    ActivityCompat.requestPermissions(this, arrayOf(permiso), permitCode!!)
-                }
-            }else if (permitCode == 2){
-                permiso = Manifest.permission.READ_EXTERNAL_STORAGE
-                if (ContextCompat.checkSelfPermission(this, permiso) != PackageManager.PERMISSION_GRANTED) {
-                    if (ActivityCompat.shouldShowRequestPermissionRationale(this, permiso)) {
-                        showSnackBar("lectura en SD")
-                    } else {
-                        requestPermissions(arrayOf(permiso), permitCode!!)
-                    }
-                } else {
-                    ActivityCompat.requestPermissions(this, arrayOf(permiso), permitCode!!)
-                }
-            }else{
-                permiso = Manifest.permission.CALL_PHONE
-                if (ContextCompat.checkSelfPermission(this, permiso) != PackageManager.PERMISSION_GRANTED) {
-                    if (ActivityCompat.shouldShowRequestPermissionRationale(this, permiso)) {
-                        showSnackBar("llamada")
-                    } else {
-                        requestPermissions(arrayOf(permiso), permitCode!!)
-                    }
-                } else {
-                    ActivityCompat.requestPermissions(this, arrayOf(permiso), permitCode!!)
-                }
-            }
 
+            if (ContextCompat.checkSelfPermission(this, permiso!!) != PackageManager.PERMISSION_GRANTED) {
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this, permiso!!)) {
+
+                    ActivityCompat.requestPermissions(this, arrayOf(permiso), permitCode!!)
+                } else {
+
+                    ActivityCompat.requestPermissions(this, arrayOf(permiso), permitCode!!)
+                }
+            } else {
+                metodosPermisos()
+                //ActivityCompat.requestPermissions(this, arrayOf(permiso), permitCode!!)
+            }
         }
     }
 
-    private fun showSnackBar(texto: String) {
-        Snackbar.make(findViewById(R.id.constrain_contacto), "conceder permisos de $texto", Snackbar.LENGTH_INDEFINITE)
-                .setAction("Configuración") { openSettings() }
-                .addCallback(object : Snackbar.Callback() {
-                    override fun onDismissed(snackbar: Snackbar?, event: Int) {
-                        super.onDismissed(snackbar, event)
-                        if (event != Snackbar.Callback.DISMISS_EVENT_ACTION) {
+    private fun metodosPermisos(){
+        when (tipo) {
+            1 -> {
+                try {
 
-                            comprobarPermisos()
-                        }
+                    val miArchivo = OutputStreamWriter(openFileOutput(AgendaFragment.ARCHIVO, Activity.MODE_PRIVATE))
+                    miArchivo.write(agendaDB!!.getJson().toString())
+                    miArchivo.flush()
+                    miArchivo.close()
+                } catch (e: IOException) {
+                    val t = Toast.makeText(this, R.string.errorExportar, Toast.LENGTH_LONG)
+                    t.show()
+                }
+            }
+            2 -> {
+                try {
+                    val jsonString = File(filesDir.toString() + "/" + AgendaFragment.ARCHIVO).inputStream().readBytes().toString(Charsets.UTF_8)
+                    val objArray = JSONArray(jsonString)
+                    for (i in 0..(objArray.length() - 1)) {
+
+                        val obj = objArray.getJSONObject(i)
+                        val nombre = obj.getString("nombre")
+                        val direccion = obj.getString("direccion")
+                        val movil = obj.getString("movil")
+                        val telefono = obj.getString("telefono")
+                        val correo = obj.getString("correo")
+                        createContact(nombre, direccion, movil, telefono, correo)
                     }
-                }).show()
-    }
-
-
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode != Activity.RESULT_OK)
-            comprobarPermisos()
-    }
-
-    private fun openSettings() {
-        val intent = Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-        intent.data = Uri.parse("package:$packageName")
-        startActivityForResult(intent, CODIGORESULT)
-    }
-
-    override fun getPackageName(): String {
-        return this.javaClass.name.replace("." + this.javaClass.simpleName, "")
+                } catch (e: IOException) {
+                    val t = Toast.makeText(this, R.string.errorImportar, Toast.LENGTH_LONG)
+                    t.show()
+                }
+            }
+            else -> {
+                val phoneNumber = String.format("tel: %s", telefono)
+                val dialIntent = Intent(Intent.ACTION_DIAL)
+                dialIntent.data = Uri.parse(phoneNumber)
+                startActivity(dialIntent)
+            }
+        }
     }
 
     companion object {
-        const val CODIGORESULT = 10
         const val MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 1
         const val MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 2
         const val MY_PERMISSIONS_REQUEST_CALL_PHONE = 3
+        const val fragmentPrincipal = "fragmentPrincipal"
+        const val fragmentCrear = "fragmentCrear"
+        const val fragmentMostrar = "fragmentMostrar"
     }
 }

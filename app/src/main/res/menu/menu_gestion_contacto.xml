@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:id="@+id/llamarC" android:title="Llamar"/>
-    <item android:id="@+id/modificarC" android:title="Modificar"/>
-    <item android:id="@+id/eliminarC" android:title="Eliminar"/>
+    <item android:id="@+id/llamarC" android:title="@string/titleLlamar"/>
+    <item android:id="@+id/modificarC" android:title="@string/titleModificar"/>
+    <item android:id="@+id/eliminarC" android:title="@string/titleEliminar"/>
 </menu>

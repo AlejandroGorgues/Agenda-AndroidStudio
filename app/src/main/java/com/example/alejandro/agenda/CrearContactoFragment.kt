@@ -173,7 +173,7 @@ class CrearContactoFragment : Fragment() {
     private fun esNombreValido(nombre: String): Boolean {
         val patron = Pattern.compile("^[a-zA-Z ]+$")
         if (!patron.matcher(nombre).matches() || nombre.length > 30) {
-            tilNombre.error = "Nombre inválido"
+            tilNombre.error = R.string.nombreInvalido.toString()
             return false
         } else {
             tilNombre.error = null
@@ -185,7 +185,7 @@ class CrearContactoFragment : Fragment() {
     private fun esDireccionValida(nombre: String): Boolean {
         val patron = Pattern.compile("^[a-zA-Z0-9]+$")
         if (!patron.matcher(nombre).matches() || nombre.length > 50) {
-            tilNombre.error = "Nombre inválido"
+            tilNombre.error = R.string.direccionInvalido.toString()
             return false
         } else {
             tilNombre.error = null
@@ -196,7 +196,7 @@ class CrearContactoFragment : Fragment() {
 
     private fun esTelefonoValido(telefono: String): Boolean {
         if (!Patterns.PHONE.matcher(telefono).matches()) {
-            tilTelefono.error = "Teléfono inválido"
+            tilTelefono.error = R.string.telefonoInvalido.toString()
             return false
         } else {
             tilTelefono.error = null
@@ -207,7 +207,7 @@ class CrearContactoFragment : Fragment() {
 
     private fun esCorreoValido(correo: String): Boolean {
         if (!Patterns.EMAIL_ADDRESS.matcher(correo).matches()) {
-            tilCorreo.error = "Correo electrónico inválido"
+            tilCorreo.error = R.string.correoInvalido.toString()
             return false
         } else {
             tilCorreo.error = null
@@ -238,7 +238,6 @@ class CrearContactoFragment : Fragment() {
 
     }
 
-    //Crea un intent el cual pasa una serie de valores de vuelta a la actividad principal
     fun devolverResultado(valor: Int) {
         val bundle = Bundle()
 

@@ -4,15 +4,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".AgendaFragment">
     <item android:id="@+id/action_add"
-        android:title="Añadir un contacto"
+        android:title="@string/addContacto"
         android:orderInCategory="100"
         app:showAsAction="never" />
     <item android:id="@+id/action_exportarJSON"
-        android:title="Exportar contactos a JSON"
+        android:title="@string/exportJSON"
         android:orderInCategory="100"
         app:showAsAction="never" />
     <item android:id="@+id/action_importarJSON"
-        android:title="Importar contactos desde JSON"
+        android:title="@string/importJSON"
         android:orderInCategory="100"
         app:showAsAction="never" />
 </menu>
