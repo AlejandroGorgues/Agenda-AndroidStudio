@@ -11,14 +11,6 @@
         <item name="windowNoTitle">true</item>
     </style>
 
-    <style name="TextAppearance.App.TextInputLayout" parent="@android:style/TextAppearance">
-        <item name="errorTextAppearance">@style/AppTheme.TextErrorAppearance</item>
-    </style>
 
-    <style name="AppTheme.TextErrorAppearance" parent="TextAppearance.Design.Error">
-        <!-- Error message appearance here -->
-        <item name="android:textColor">@color/colorError</item>
-        <item name="android:textSize">20sp</item>
-    </style>
 
 </resources>

@@ -49,8 +49,7 @@ class AgendaActivity : AppCompatActivity(), DataPassListener, DataBaseListener {
         val transaction = manager!!.beginTransaction()
         val fragmentLista = AgendaFragment()
 
-        transaction.add(R.id.agendaActivityLayout, fragmentLista, fragmentPrincipal)
-        transaction.addToBackStack(null)
+        transaction.add(R.id.agendaActivityLayout, fragmentLista)
         transaction.commit()
 
 
@@ -62,43 +61,24 @@ class AgendaActivity : AppCompatActivity(), DataPassListener, DataBaseListener {
         val fragmentReplace: Fragment
             when (fragment) {
                 0 -> {
-                    fragmentReplace = if( manager!!.findFragmentByTag(fragmentPrincipal) != null) {
-                        manager!!.findFragmentByTag(fragmentPrincipal) as AgendaFragment
-                    }else{
-                        AgendaFragment()
-                    }
-
+                    fragmentReplace = AgendaFragment()
                     fragmentReplace.arguments = data
-                    transaction.replace(R.id.agendaActivityLayout, fragmentReplace, fragmentPrincipal)
-                    transaction.addToBackStack(null)
+                    transaction.replace(R.id.agendaActivityLayout, fragmentReplace)
 
                 }
                 1 -> {
 
-                    fragmentReplace = if( manager!!.findFragmentByTag(fragmentCrear) != null) {
-                        manager!!.findFragmentByTag(fragmentCrear) as CrearContactoFragment
-                    }else{
-                        CrearContactoFragment()
-                    }
-
+                    fragmentReplace = CrearContactoFragment()
                     fragmentReplace.arguments = data
-                    transaction.replace(R.id.agendaActivityLayout, fragmentReplace, fragmentCrear)
-                    transaction.addToBackStack(null)
+                    transaction.replace(R.id.agendaActivityLayout, fragmentReplace)
 
                 }
                 else -> {
 
 
-                    fragmentReplace = if( manager!!.findFragmentByTag(fragmentMostrar) != null) {
-                        manager!!.findFragmentByTag(fragmentMostrar) as MostrarContactoFragment
-                    }else{
-                        MostrarContactoFragment()
-                    }
-
+                    fragmentReplace = MostrarContactoFragment()
                     fragmentReplace.arguments = data
-
-                    transaction.replace(R.id.agendaActivityLayout, fragmentReplace, fragmentMostrar)
-                    transaction.addToBackStack(null)
+                    transaction.replace(R.id.agendaActivityLayout, fragmentReplace)
 
 
                 }
@@ -145,12 +125,11 @@ class AgendaActivity : AppCompatActivity(), DataPassListener, DataBaseListener {
     override fun exportJsonData() {
         val estado = Environment.getExternalStorageState()
         if (estado == Environment.MEDIA_MOUNTED) {
-            Log.e("aqui", "aqui")
             permitCode = 1
             permiso = Manifest.permission.WRITE_EXTERNAL_STORAGE
             comprobarPermisos()
         } else {
-            Toast.makeText(this, "Fallo al acceso de la tarjeta SD", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, resources.getString(R.string.errorAccesoSD), Toast.LENGTH_SHORT).show();
         }
 
     }
@@ -162,7 +141,7 @@ class AgendaActivity : AppCompatActivity(), DataPassListener, DataBaseListener {
             permiso = Manifest.permission.READ_EXTERNAL_STORAGE
             comprobarPermisos()
         } else {
-            Toast.makeText(this, "Fallo al acceso de la tarjeta SD", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, resources.getString(R.string.errorAccesoSD), Toast.LENGTH_SHORT).show();
         }
 
     }
@@ -189,7 +168,7 @@ class AgendaActivity : AppCompatActivity(), DataPassListener, DataBaseListener {
                     tipo = 1
                     metodosPermisos()
                 } else {
-                    Toast.makeText(this, R.string.errorEscritura, Toast.LENGTH_LONG).show()
+                    Toast.makeText(this,resources.getString(R.string.errorEscritura), Toast.LENGTH_LONG).show()
                 }
 
             MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE ->
@@ -197,7 +176,7 @@ class AgendaActivity : AppCompatActivity(), DataPassListener, DataBaseListener {
                     tipo = 2
                     metodosPermisos()
                 } else {
-                    Toast.makeText(this, R.string.errorLectura, Toast.LENGTH_LONG).show()
+                    Toast.makeText(this, resources.getString(R.string.errorLectura), Toast.LENGTH_LONG).show()
                 }
 
             MY_PERMISSIONS_REQUEST_CALL_PHONE ->
@@ -205,7 +184,7 @@ class AgendaActivity : AppCompatActivity(), DataPassListener, DataBaseListener {
                     tipo = 3
                    metodosPermisos()
                 }else {
-                    Toast.makeText(this, R.string.errorLlamada, Toast.LENGTH_LONG).show()
+                    Toast.makeText(this, resources.getString(R.string.errorLlamada), Toast.LENGTH_LONG).show()
                 }
         }
     }
@@ -227,12 +206,10 @@ class AgendaActivity : AppCompatActivity(), DataPassListener, DataBaseListener {
                     ActivityCompat.requestPermissions(this, arrayOf(permiso), permitCode!!)
                 }
             } else {
-                tipo = if(permiso == Manifest.permission.WRITE_EXTERNAL_STORAGE){
-                    1
-                }else if (permiso == Manifest.permission.READ_EXTERNAL_STORAGE){
-                    2
-                }else{
-                    3
+                tipo = when (permiso) {
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE -> 1
+                    Manifest.permission.READ_EXTERNAL_STORAGE -> 2
+                    else -> 3
                 }
                 metodosPermisos()
             }
@@ -245,20 +222,18 @@ class AgendaActivity : AppCompatActivity(), DataPassListener, DataBaseListener {
                 try {
                     val ruta = Environment.getExternalStorageDirectory()
                     val f = File(ruta.absolutePath, "contactos.CNT")
-                    //val miArchivo = OutputStreamWriter(openFileOutput(ARCHIVO, Activity.MODE_PRIVATE))
                     val miArchivo =  OutputStreamWriter( FileOutputStream(f))
                     miArchivo.write(agendaDB!!.getJson().toString())
                     miArchivo.flush()
                     miArchivo.close()
                 } catch (e: IOException) {
-                    val t = Toast.makeText(this, R.string.errorExportar, Toast.LENGTH_LONG)
+                    val t = Toast.makeText(this, resources.getString(R.string.errorExportar), Toast.LENGTH_LONG)
                     t.show()
                 }
             }
             2 -> {
                 try {
-                    //val f = File(ruta.absolutePath, "contactos.CNT")
-                    //val fRead = BufferedReader(InputStreamReader(FileInputStream(f)))
+
                     val yourFile = File(Environment.getExternalStorageDirectory().absolutePath, "contactos.CNT")
                     val stream = FileInputStream(yourFile)
                     var jsonStr: String? = null
@@ -286,7 +261,7 @@ class AgendaActivity : AppCompatActivity(), DataPassListener, DataBaseListener {
                         createContact(nombre, direccion, movil, telefono, correo)
                     }
                 } catch (e: IOException) {
-                    val t = Toast.makeText(this, R.string.errorImportar, Toast.LENGTH_LONG)
+                    val t = Toast.makeText(this, resources.getString(R.string.errorImportar), Toast.LENGTH_LONG)
                     t.show()
                 }
             }
@@ -303,9 +278,5 @@ class AgendaActivity : AppCompatActivity(), DataPassListener, DataBaseListener {
         const val MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 1
         const val MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 2
         const val MY_PERMISSIONS_REQUEST_CALL_PHONE = 3
-        const val ARCHIVO = "contactos.CNT"
-        const val fragmentPrincipal = "fragmentPrincipal"
-        const val fragmentCrear = "fragmentCrear"
-        const val fragmentMostrar = "fragmentMostrar"
     }
 }

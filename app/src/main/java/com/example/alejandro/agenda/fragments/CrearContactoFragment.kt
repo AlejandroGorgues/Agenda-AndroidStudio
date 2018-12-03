@@ -7,6 +7,7 @@ import android.support.v4.app.Fragment
 import android.support.v7.widget.Toolbar
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.util.Patterns
 import android.view.*
 import android.widget.EditText
@@ -139,6 +140,7 @@ class CrearContactoFragment : Fragment() {
                     }
 
                     override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
+
                         esCorreoValido(s.toString())
                     }
 
@@ -173,7 +175,7 @@ class CrearContactoFragment : Fragment() {
     private fun esNombreValido(nombre: String): Boolean {
         val patron = Pattern.compile("^[a-zA-Z ]+$")
         if (!patron.matcher(nombre).matches() || nombre.length > 30) {
-            tilNombre.error = R.string.nombreInvalido.toString()
+            tilNombre.error = resources.getString(R.string.nombreInvalido)
             return false
         } else {
             tilNombre.error = null
@@ -185,10 +187,10 @@ class CrearContactoFragment : Fragment() {
     private fun esDireccionValida(nombre: String): Boolean {
         val patron = Pattern.compile("^[a-zA-Z0-9]+$")
         if (!patron.matcher(nombre).matches() || nombre.length > 50) {
-            tilNombre.error = R.string.direccionInvalido.toString()
+            tilDireccion.error = resources.getString(R.string.direccionInvalido)
             return false
         } else {
-            tilNombre.error = null
+            tilDireccion.error = null
         }
 
         return true
@@ -196,7 +198,7 @@ class CrearContactoFragment : Fragment() {
 
     private fun esTelefonoValido(telefono: String): Boolean {
         if (!Patterns.PHONE.matcher(telefono).matches()) {
-            tilTelefono.error = R.string.telefonoInvalido.toString()
+            tilTelefono.error = resources.getString(R.string.telefonoInvalido)
             return false
         } else {
             tilTelefono.error = null
@@ -207,7 +209,7 @@ class CrearContactoFragment : Fragment() {
 
     private fun esCorreoValido(correo: String): Boolean {
         if (!Patterns.EMAIL_ADDRESS.matcher(correo).matches()) {
-            tilCorreo.error = R.string.correoInvalido.toString()
+            tilCorreo.error = resources.getString(R.string.correoInvalido)
             return false
         } else {
             tilCorreo.error = null
@@ -246,20 +248,11 @@ class CrearContactoFragment : Fragment() {
 
 
             activityDataBaseListener.createContact(nombre.text.toString(),direccion.text.toString(),movil.text.toString(),telefono.text.toString(),correo.text.toString())
-            vaciarCampos()
             activityPassData.passData(bundle, 0)
 
         } else
-            vaciarCampos()
             activityPassData.passData(bundle, 0)
     }
 
-    fun vaciarCampos(){
-        tilNombre.editText!!.text = Editable.Factory.getInstance().newEditable("")
-        tilDireccion.editText!!.text = Editable.Factory.getInstance().newEditable("")
-        tilTelefono.editText!!.text = Editable.Factory.getInstance().newEditable("")
-        tilMovil.editText!!.text = Editable.Factory.getInstance().newEditable("")
-        tilCorreo.editText!!.text = Editable.Factory.getInstance().newEditable("")
-    }
 
 }

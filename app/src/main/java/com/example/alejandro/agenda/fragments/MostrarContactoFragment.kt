@@ -6,6 +6,7 @@ import android.support.v4.app.Fragment
 import android.support.v7.widget.Toolbar
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.util.Patterns
 import android.view.*
 import android.widget.EditText
@@ -68,6 +69,23 @@ class MostrarContactoFragment : Fragment() {
         tilTelefono = view.findViewById(R.id.til_telefono)
         tilMovil = view.findViewById(R.id.til_movil)
         tilCorreo = view.findViewById(R.id.til_correo)
+
+        bundle = this.arguments
+        if (bundle != null) {
+
+            idC = bundle!!.getInt("ID")
+            nombre = bundle!!.getString("Nombre")
+            direccion = bundle!!.getString("Direccion")
+            movil = bundle!!.getString("Movil")
+            telefono = bundle!!.getString("Telefono")
+            correo = bundle!!.getString("Correo")
+        }
+
+        edNombre.setText(nombre)
+        edDireccion.setText(direccion)
+        edMovil.setText(movil)
+        edTelefono.setText(telefono)
+        edCorreo.setText(correo)
 
         edNombre.addTextChangedListener(
                 object : TextWatcher {
@@ -137,6 +155,7 @@ class MostrarContactoFragment : Fragment() {
                     }
 
                     override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
+
                         esCorreoValido(s.toString())
                     }
 
@@ -170,31 +189,10 @@ class MostrarContactoFragment : Fragment() {
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        bundle = this.arguments
-        if (bundle != null) {
-
-            idC = bundle!!.getInt("ID")
-            nombre = bundle!!.getString("Nombre")
-            direccion = bundle!!.getString("Direccion")
-            movil = bundle!!.getString("Movil")
-            telefono = bundle!!.getString("Telefono")
-            correo = bundle!!.getString("Correo")
-        }
-
-        edNombre.setText(nombre)
-        edDireccion.setText(direccion)
-        edMovil.setText(movil)
-        edTelefono.setText(telefono)
-        edCorreo.setText(correo)
-    }
-
-
     private fun esNombreValido(nombre: String): Boolean {
         val patron = Pattern.compile("^[a-zA-Z ]+$")
         if (!patron.matcher(nombre).matches() || nombre.length > 30) {
-            tilNombre.error = R.string.nombreInvalido.toString()
+            tilNombre.error = resources.getString(R.string.nombreInvalido)
             return false
         } else {
             tilNombre.error = null
@@ -206,7 +204,7 @@ class MostrarContactoFragment : Fragment() {
     private fun esDireccionValida(nombre: String): Boolean {
         val patron = Pattern.compile("^[a-zA-Z0-9]+$")
         if (!patron.matcher(nombre).matches() || nombre.length > 30) {
-            tilNombre.error = R.string.direccionInvalido.toString()
+            tilNombre.error = resources.getString(R.string.direccionInvalido)
             return false
         } else {
             tilNombre.error = null
@@ -217,7 +215,7 @@ class MostrarContactoFragment : Fragment() {
 
     private fun esTelefonoValido(telefono: String): Boolean {
         if (!Patterns.PHONE.matcher(telefono).matches()) {
-            tilTelefono.error = R.string.telefonoInvalido.toString()
+            tilTelefono.error = resources.getString(R.string.telefonoInvalido)
             return false
         } else {
             tilTelefono.error = null
@@ -228,7 +226,7 @@ class MostrarContactoFragment : Fragment() {
 
     private fun esCorreoValido(correo: String): Boolean {
         if (!Patterns.EMAIL_ADDRESS.matcher(correo).matches()) {
-            tilCorreo.error = R.string.correoInvalido.toString()
+            tilCorreo.error = resources.getString(R.string.correoInvalido)
             return false
         } else {
             tilCorreo.error = null
@@ -267,22 +265,13 @@ class MostrarContactoFragment : Fragment() {
         when (valor) {
             1 -> {
                 activityDataBaseListener.modifiedDataContact(idC, edNombre.text.toString(), edDireccion.text.toString(), edMovil.text.toString(), edTelefono.text.toString(), edCorreo.text.toString())
-                //vaciarCampos()
                 activityPassData.passData(bundle, 0)
             }
             else ->{
-                //vaciarCampos()
                 activityPassData.passData(bundle, 0)
             }
         }
     }
 
-    fun vaciarCampos(){
-        tilNombre.editText!!.text = Editable.Factory.getInstance().newEditable("")
-        tilDireccion.editText!!.text = Editable.Factory.getInstance().newEditable("")
-        tilTelefono.editText!!.text = Editable.Factory.getInstance().newEditable("")
-        tilMovil.editText!!.text = Editable.Factory.getInstance().newEditable("")
-        tilCorreo.editText!!.text = Editable.Factory.getInstance().newEditable("")
-    }
 
 }
