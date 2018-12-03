@@ -2,6 +2,7 @@ package com.example.alejandro.agenda
 
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.helper.ItemTouchHelper
+import com.example.alejandro.agenda.interfaces.ContactoTouchAdapter
 
 
 class SwipeContactoTouch(private val contactoTouchAdapter: ContactoTouchAdapter) : ItemTouchHelper.Callback() {

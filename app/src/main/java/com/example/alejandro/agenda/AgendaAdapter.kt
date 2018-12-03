@@ -4,6 +4,8 @@ import android.support.v7.widget.RecyclerView
 import android.view.*
 import android.widget.TextView
 import android.view.LayoutInflater
+import com.example.alejandro.agenda.interfaces.ContactoTouchAdapter
+import com.example.alejandro.agenda.model.Contacto
 import java.util.*
 
 
@@ -40,15 +42,22 @@ class AgendaAdapter(private val contactos : ArrayList<Contacto>, private val age
 
     override fun onMoverItem(fromPosition: Int, toPosition: Int) {
         val contactoAux = contactos[fromPosition]
+
         agendaDB.modificarContacto(contactos[fromPosition].id, contactos[toPosition].nombre!!, contactos[toPosition].direccion!!, contactos[toPosition].movil!!, contactos[toPosition].telefono!!, contactos[toPosition].correo!!)
         agendaDB.modificarContacto(contactos[toPosition].id, contactoAux.nombre!!, contactoAux.direccion!!, contactoAux.movil!!, contactoAux.telefono!!, contactoAux.correo!!)
         if (fromPosition < toPosition) {
             for (i in fromPosition until toPosition) {
                 Collections.swap(contactos, i, i + 1) //método java para intercambiar las posiciones de elementos en un array
+                val idAux = contactos[i].id
+                contactos[i].id = contactos[i+1].id
+                contactos[i+1].id = idAux
             }
         } else {
-            for (i in fromPosition downTo toPosition + 1) {
+            for (i in fromPosition downTo toPosition +1) {
                 Collections.swap(contactos, i, i - 1)
+                val idAux = contactos[i].id
+                contactos[i].id = contactos[i-1].id
+                contactos[i-1].id = idAux
             }
         }
 

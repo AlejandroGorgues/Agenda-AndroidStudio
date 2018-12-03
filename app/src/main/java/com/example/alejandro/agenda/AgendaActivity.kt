@@ -1,14 +1,13 @@
 package com.example.alejandro.agenda
 
 import android.Manifest
-import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 
 import android.os.Bundle
-import android.support.design.widget.Snackbar
+import android.os.Environment
 import android.support.v4.app.ActivityCompat
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
@@ -17,9 +16,18 @@ import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import org.json.JSONArray
 import android.widget.Toast
-import java.io.File
-import java.io.IOException
-import java.io.OutputStreamWriter
+import com.example.alejandro.agenda.fragments.AgendaFragment
+import com.example.alejandro.agenda.fragments.CrearContactoFragment
+import com.example.alejandro.agenda.fragments.MostrarContactoFragment
+import com.example.alejandro.agenda.interfaces.DataBaseListener
+import com.example.alejandro.agenda.interfaces.DataPassListener
+import com.example.alejandro.agenda.model.Contacto
+import java.io.*
+import java.nio.channels.FileChannel
+import java.nio.charset.Charset
+
+
+
 
 class AgendaActivity : AppCompatActivity(), DataPassListener, DataBaseListener {
 
@@ -135,15 +143,28 @@ class AgendaActivity : AppCompatActivity(), DataPassListener, DataBaseListener {
     }
 
     override fun exportJsonData() {
-        permitCode = 1
-        permiso = Manifest.permission.WRITE_EXTERNAL_STORAGE
-        comprobarPermisos()
+        val estado = Environment.getExternalStorageState()
+        if (estado == Environment.MEDIA_MOUNTED) {
+            Log.e("aqui", "aqui")
+            permitCode = 1
+            permiso = Manifest.permission.WRITE_EXTERNAL_STORAGE
+            comprobarPermisos()
+        } else {
+            Toast.makeText(this, "Fallo al acceso de la tarjeta SD", Toast.LENGTH_SHORT).show();
+        }
+
     }
 
     override fun importJsonData() {
-        permitCode = 2
-        permiso = Manifest.permission.READ_EXTERNAL_STORAGE
-        comprobarPermisos()
+        val estado = Environment.getExternalStorageState()
+        if (estado == Environment.MEDIA_MOUNTED || estado == Environment.MEDIA_MOUNTED_READ_ONLY) {
+            permitCode = 2
+            permiso = Manifest.permission.READ_EXTERNAL_STORAGE
+            comprobarPermisos()
+        } else {
+            Toast.makeText(this, "Fallo al acceso de la tarjeta SD", Toast.LENGTH_SHORT).show();
+        }
+
     }
 
     override fun callContact() {
@@ -163,6 +184,7 @@ class AgendaActivity : AppCompatActivity(), DataPassListener, DataBaseListener {
             MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE ->
 
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
 
                     tipo = 1
                     metodosPermisos()
@@ -205,8 +227,14 @@ class AgendaActivity : AppCompatActivity(), DataPassListener, DataBaseListener {
                     ActivityCompat.requestPermissions(this, arrayOf(permiso), permitCode!!)
                 }
             } else {
+                tipo = if(permiso == Manifest.permission.WRITE_EXTERNAL_STORAGE){
+                    1
+                }else if (permiso == Manifest.permission.READ_EXTERNAL_STORAGE){
+                    2
+                }else{
+                    3
+                }
                 metodosPermisos()
-                //ActivityCompat.requestPermissions(this, arrayOf(permiso), permitCode!!)
             }
         }
     }
@@ -215,8 +243,10 @@ class AgendaActivity : AppCompatActivity(), DataPassListener, DataBaseListener {
         when (tipo) {
             1 -> {
                 try {
-
-                    val miArchivo = OutputStreamWriter(openFileOutput(AgendaFragment.ARCHIVO, Activity.MODE_PRIVATE))
+                    val ruta = Environment.getExternalStorageDirectory()
+                    val f = File(ruta.absolutePath, "contactos.CNT")
+                    //val miArchivo = OutputStreamWriter(openFileOutput(ARCHIVO, Activity.MODE_PRIVATE))
+                    val miArchivo =  OutputStreamWriter( FileOutputStream(f))
                     miArchivo.write(agendaDB!!.getJson().toString())
                     miArchivo.flush()
                     miArchivo.close()
@@ -227,8 +257,24 @@ class AgendaActivity : AppCompatActivity(), DataPassListener, DataBaseListener {
             }
             2 -> {
                 try {
-                    val jsonString = File(filesDir.toString() + "/" + AgendaFragment.ARCHIVO).inputStream().readBytes().toString(Charsets.UTF_8)
-                    val objArray = JSONArray(jsonString)
+                    //val f = File(ruta.absolutePath, "contactos.CNT")
+                    //val fRead = BufferedReader(InputStreamReader(FileInputStream(f)))
+                    val yourFile = File(Environment.getExternalStorageDirectory().absolutePath, "contactos.CNT")
+                    val stream = FileInputStream(yourFile)
+                    var jsonStr: String? = null
+                    try {
+                        val fc = stream.channel
+                        val bb = fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size())
+
+                        jsonStr = Charset.defaultCharset().decode(bb).toString()
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    } finally {
+                        stream.close()
+                    }
+
+                    val objArray = JSONArray(jsonStr)
+
                     for (i in 0..(objArray.length() - 1)) {
 
                         val obj = objArray.getJSONObject(i)
@@ -257,6 +303,7 @@ class AgendaActivity : AppCompatActivity(), DataPassListener, DataBaseListener {
         const val MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 1
         const val MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 2
         const val MY_PERMISSIONS_REQUEST_CALL_PHONE = 3
+        const val ARCHIVO = "contactos.CNT"
         const val fragmentPrincipal = "fragmentPrincipal"
         const val fragmentCrear = "fragmentCrear"
         const val fragmentMostrar = "fragmentMostrar"

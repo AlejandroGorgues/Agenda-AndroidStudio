@@ -1,4 +1,4 @@
-package com.example.alejandro.agenda
+package com.example.alejandro.agenda.fragments
 
 import android.os.Bundle
 import android.support.design.widget.FloatingActionButton
@@ -9,8 +9,12 @@ import android.support.v7.widget.helper.ItemTouchHelper
 import android.widget.PopupMenu
 import android.support.v7.widget.DefaultItemAnimator
 import android.support.v7.widget.LinearLayoutManager
-import android.util.Log
 import android.view.*
+import com.example.alejandro.agenda.*
+import com.example.alejandro.agenda.interfaces.ContactoTouchAdapter
+import com.example.alejandro.agenda.interfaces.DataBaseListener
+import com.example.alejandro.agenda.interfaces.DataPassListener
+import com.example.alejandro.agenda.model.Contacto
 
 
 class AgendaFragment : Fragment()  {
@@ -95,7 +99,7 @@ class AgendaFragment : Fragment()  {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.action_add-> {
+            R.id.action_add -> {
                 creaContacto()
                 return true
             }
@@ -145,10 +149,6 @@ class AgendaFragment : Fragment()  {
         bundle.putString("Correo", miContacto.correo)
 
         activityPassData.passData(bundle, 2)
-    }
-
-    companion object {
-        const val ARCHIVO = "contactos.CNT"
     }
 
 }

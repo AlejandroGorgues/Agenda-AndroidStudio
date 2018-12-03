@@ -6,7 +6,7 @@ import android.database.Cursor
 import android.database.DatabaseUtils
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
-import android.util.Log
+import com.example.alejandro.agenda.model.Contacto
 import org.json.JSONObject
 import org.json.JSONArray
 
@@ -67,7 +67,7 @@ class AgendaBaseDatos(context: Context) : SQLiteOpenHelper(context, NOMBRE_DB, n
         val valoresRecuperar = arrayOf("_id", "nombre", "direccion", "movil", "telefono", "correo")
         val c = db.query("contactos", valoresRecuperar, "_id=$id", null, null, null, null, null)
         c?.moveToFirst()
-        val contacto = Contacto(c!!.getInt(0), c.getString(1), c.getString(2), c.getString(3),c.getString(4),c.getString(5))
+        val contacto = Contacto(c!!.getInt(0), c.getString(1), c.getString(2), c.getString(3), c.getString(4), c.getString(5))
         db.close()
         c.close()
         return contacto

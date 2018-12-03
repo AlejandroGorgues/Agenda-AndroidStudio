@@ -1,4 +1,4 @@
-package com.example.alejandro.agenda
+package com.example.alejandro.agenda.interfaces
 
 interface ContactoTouchAdapter {
 

@@ -7,7 +7,7 @@
     android:fitsSystemWindows="true"
     android:orientation="vertical"
     android:tag="fragmentMostrar"
-    tools:context="com.example.alejandro.agenda.MostrarContactoFragment">
+    tools:context="com.example.alejandro.agenda.fragments.MostrarContactoFragment">
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/modificarCToolbar"

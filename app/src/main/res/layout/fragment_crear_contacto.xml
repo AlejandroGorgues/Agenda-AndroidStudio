@@ -7,7 +7,7 @@
     android:fitsSystemWindows="true"
     android:orientation="vertical"
     android:tag="fragmentCrear"
-    tools:context="com.example.alejandro.agenda.CrearContactoFragment">
+    tools:context="com.example.alejandro.agenda.fragments.CrearContactoFragment">
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/crearCToolbar"

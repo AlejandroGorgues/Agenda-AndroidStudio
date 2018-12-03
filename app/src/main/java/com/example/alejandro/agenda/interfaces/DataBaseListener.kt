@@ -1,4 +1,7 @@
-package com.example.alejandro.agenda
+package com.example.alejandro.agenda.interfaces
+
+import com.example.alejandro.agenda.AgendaBaseDatos
+import com.example.alejandro.agenda.model.Contacto
 
 interface DataBaseListener {
     fun modifiedDataContact(id:Int, nombre:String,direccion:String,movil:String,telefono:String,correo:String)

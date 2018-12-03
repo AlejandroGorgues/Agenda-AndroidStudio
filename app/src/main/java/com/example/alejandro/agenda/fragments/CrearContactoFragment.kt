@@ -1,4 +1,5 @@
-package com.example.alejandro.agenda
+package com.example.alejandro.agenda.fragments
+
 
 import android.os.Bundle
 import android.support.design.widget.TextInputLayout
@@ -6,22 +7,24 @@ import android.support.v4.app.Fragment
 import android.support.v7.widget.Toolbar
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.util.Patterns
 import android.view.*
 import android.widget.EditText
+import com.example.alejandro.agenda.AgendaActivity
+import com.example.alejandro.agenda.interfaces.DataBaseListener
+import com.example.alejandro.agenda.interfaces.DataPassListener
+import com.example.alejandro.agenda.R
 import java.util.regex.Pattern
 
 
+class CrearContactoFragment : Fragment() {
 
 
-class MostrarContactoFragment : Fragment() {
-
-    private lateinit var edNombre: EditText
-    private lateinit var edDireccion: EditText
-    private lateinit var edMovil: EditText
-    private lateinit var edTelefono: EditText
-    private lateinit var edCorreo: EditText
+    private lateinit var nombre: EditText
+    private lateinit var direccion: EditText
+    private lateinit var movil: EditText
+    private lateinit var telefono: EditText
+    private lateinit var correo: EditText
 
     private lateinit var tilNombre: TextInputLayout
     private lateinit var tilDireccion: TextInputLayout
@@ -29,35 +32,31 @@ class MostrarContactoFragment : Fragment() {
     private lateinit var tilMovil: TextInputLayout
     private lateinit var tilCorreo: TextInputLayout
 
-    private var idC: Int = 0
-    private var nombre: String? = null
-    private var direccion: String? = null
-    private var movil: String? = null
-    private var telefono: String? = null
-    private var correo: String? = null
+    internal var id: Int = 0
 
+    private lateinit var toolbar: Toolbar
 
     private lateinit var activityDataBaseListener: DataBaseListener
     private lateinit var activityPassData: DataPassListener
 
-    private lateinit var toolbar: Toolbar
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         setHasOptionsMenu(true)
-        val view = inflater.inflate(R.layout.fragment_mostrar_contacto, container, false)
+        val view = inflater.inflate(R.layout.fragment_crear_contacto, container, false)
 
         activityDataBaseListener = activity as DataBaseListener
         activityPassData = activity as DataPassListener
 
-        toolbar = view.findViewById(R.id.modificarCToolbar)
+
+
+        toolbar = view.findViewById(R.id.crearCToolbar)
         (activity as AgendaActivity).setSupportActionBar(toolbar)
 
-        edNombre = view.findViewById(R.id.edNombre)
-        edDireccion = view.findViewById(R.id.edDireccion)
-        edMovil = view.findViewById(R.id.edMovil)
-        edTelefono = view.findViewById(R.id.edTelefono)
-        edCorreo = view.findViewById(R.id.edCorreo)
+        nombre = view.findViewById(R.id.crNombre)
+        direccion = view.findViewById(R.id.crDireccion)
+        movil = view.findViewById(R.id.crMovil)
+        telefono = view.findViewById(R.id.crTelefono)
+        correo = view.findViewById(R.id.crCorreo)
 
         tilNombre = view.findViewById(R.id.til_nombre)
         tilDireccion = view.findViewById(R.id.til_direccion)
@@ -67,26 +66,7 @@ class MostrarContactoFragment : Fragment() {
 
 
 
-        val bundle = this.arguments
-        if (bundle != null) {
-
-
-            idC = bundle.getInt("ID")
-            nombre = bundle.getString("Nombre")
-            direccion = bundle.getString("Direccion")
-            movil = bundle.getString("Movil")
-            telefono = bundle.getString("Telefono")
-            correo = bundle.getString("Correo")
-        }
-
-
-        edNombre.setText(nombre)
-        edDireccion.setText(direccion)
-        edMovil.setText(movil)
-        edTelefono.setText(telefono)
-        edCorreo.setText(correo)
-
-        edNombre.addTextChangedListener(
+        nombre.addTextChangedListener(
                 object : TextWatcher {
                     override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
 
@@ -104,7 +84,7 @@ class MostrarContactoFragment : Fragment() {
                 })
 
 
-        edDireccion.addTextChangedListener(
+        direccion.addTextChangedListener(
                 object : TextWatcher {
 
                     override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
@@ -121,10 +101,11 @@ class MostrarContactoFragment : Fragment() {
 
                 })
 
-        edTelefono.addTextChangedListener(
+        telefono.addTextChangedListener(
                 object : TextWatcher {
 
                     override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+
                     }
 
                     override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
@@ -132,12 +113,14 @@ class MostrarContactoFragment : Fragment() {
                     }
 
                     override fun afterTextChanged(p0: Editable?) {
+
                     }
                 })
 
-        edMovil.addTextChangedListener(
+        movil.addTextChangedListener(
                 object : TextWatcher {
                     override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+
                     }
 
                     override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
@@ -145,12 +128,14 @@ class MostrarContactoFragment : Fragment() {
                     }
 
                     override fun afterTextChanged(p0: Editable?) {
+
                     }
                 })
 
-        edCorreo.addTextChangedListener(
+        correo.addTextChangedListener(
                 object : TextWatcher {
                     override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+
                     }
 
                     override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
@@ -158,6 +143,7 @@ class MostrarContactoFragment : Fragment() {
                     }
 
                     override fun afterTextChanged(p0: Editable?) {
+
                     }
                 })
 
@@ -165,25 +151,22 @@ class MostrarContactoFragment : Fragment() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
-        activity!!.menuInflater.inflate(R.menu.menu_modificar_contacto, menu)
+        activity!!.menuInflater.inflate(R.menu.menu_crear_contacto, menu)
         super.onCreateOptionsMenu(menu, inflater)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.bAction_modC-> {
+        return when (item.itemId) {
+            R.id.bAction_crearC -> {
                 validarDatos(1)
-                return true
+                true
             }
-            R.id.bAction_llamarC -> {
-                activityDataBaseListener.callContact()
-                return true
-            }
-            R.id.bAction_cancelarModC -> {
+            R.id.bAction_cancelarCrC -> {
                 validarDatos(0)
-                return true
+
+                true
             }
-            else -> return super.onOptionsItemSelected(item)
+            else -> super.onOptionsItemSelected(item)
         }
     }
 
@@ -201,7 +184,7 @@ class MostrarContactoFragment : Fragment() {
 
     private fun esDireccionValida(nombre: String): Boolean {
         val patron = Pattern.compile("^[a-zA-Z0-9]+$")
-        if (!patron.matcher(nombre).matches() || nombre.length > 30) {
+        if (!patron.matcher(nombre).matches() || nombre.length > 50) {
             tilNombre.error = R.string.direccionInvalido.toString()
             return false
         } else {
@@ -239,9 +222,7 @@ class MostrarContactoFragment : Fragment() {
         val telefono = tilTelefono.editText!!.text.toString()
         val movil = tilMovil.editText!!.text.toString()
         val correo = tilCorreo.editText!!.text.toString()
-
         if(valor != 0) {
-
             val a = esNombreValido(nombre)
             val b = esDireccionValida(direccion)
             val c = esTelefonoValido(telefono)
@@ -254,23 +235,31 @@ class MostrarContactoFragment : Fragment() {
         }else{
             devolverResultado(0)
         }
+
     }
 
     fun devolverResultado(valor: Int) {
         val bundle = Bundle()
 
 
-        when (valor) {
-            1 -> {
-                activityDataBaseListener.modifiedDataContact(idC, edNombre.text.toString(), edDireccion.text.toString(), edMovil.text.toString(), edTelefono.text.toString(), edCorreo.text.toString())
-                activityPassData.passData(bundle, 0)
-            }
-            else ->{
-                activityPassData.passData(bundle, 0)
-            }
-        }
+        if (valor == 1) {
+
+
+            activityDataBaseListener.createContact(nombre.text.toString(),direccion.text.toString(),movil.text.toString(),telefono.text.toString(),correo.text.toString())
+            vaciarCampos()
+            activityPassData.passData(bundle, 0)
+
+        } else
+            vaciarCampos()
+            activityPassData.passData(bundle, 0)
     }
 
-
+    fun vaciarCampos(){
+        tilNombre.editText!!.text = Editable.Factory.getInstance().newEditable("")
+        tilDireccion.editText!!.text = Editable.Factory.getInstance().newEditable("")
+        tilTelefono.editText!!.text = Editable.Factory.getInstance().newEditable("")
+        tilMovil.editText!!.text = Editable.Factory.getInstance().newEditable("")
+        tilCorreo.editText!!.text = Editable.Factory.getInstance().newEditable("")
+    }
 
 }
