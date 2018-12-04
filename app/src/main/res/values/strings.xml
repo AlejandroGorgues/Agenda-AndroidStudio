@@ -34,8 +34,8 @@
     <string name="errorEscritura">No se han concedido los permisos de ecritura, por favor, cambie los permisos manualmente</string>
     <string name="errorLectura">No se han concedido los permisos de lectura, por favor, cambie los permisos manualmente</string>
     <string name="errorLlamada">No se han concedido los permisos de llamada, por favor, cambie los permisos manualmente</string>
-    <string name="errorExportar">Error, no se ha podido exportar a ningun archivo, verifique que hay una tarjeta externa</string>
-    <string name="errorImportar">Error, no se ha podido importar ningun archivo, verifique que hay una tarjeta externa</string>
+    <string name="errorExportar">Error, no se ha podido exportar a ningun archivo</string>
+    <string name="errorImportar">Error, no se ha podido importar ningun archivo, verifique que se encuentra el archivo "contactos.CNT</string>
     <string name="errorAccesoSD">Fallo al acceso de la tarjeta SD</string>
     <string name="oldVersion">La versión que posee es anterior a la version 23</string>
 
