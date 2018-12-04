@@ -160,10 +160,12 @@ class CrearContactoFragment : Fragment() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.bAction_crearC -> {
+                //Si crea un contacto llama al método validarDatos con argumento 1
                 validarDatos(1)
                 true
             }
             R.id.bAction_cancelarCrC -> {
+                //Si cancela la operación llama al método validarDatos con argumento 0
                 validarDatos(0)
 
                 true
@@ -172,6 +174,7 @@ class CrearContactoFragment : Fragment() {
         }
     }
 
+    //Si el nombre cumple el patrón ^[a-zA-Z ]+$ o tiene una longitud mayor de 30 muestra mensaje de error
     private fun esNombreValido(nombre: String): Boolean {
         val patron = Pattern.compile("^[a-zA-Z ]+$")
         if (!patron.matcher(nombre).matches() || nombre.length > 30) {
@@ -184,6 +187,7 @@ class CrearContactoFragment : Fragment() {
         return true
     }
 
+    //Si la dirección cumple el patrón "^[a-zA-Z0-9]+$ o tiene una longitud mayor de 50 muestra mensaje de error
     private fun esDireccionValida(nombre: String): Boolean {
         val patron = Pattern.compile("^[a-zA-Z0-9]+$")
         if (!patron.matcher(nombre).matches() || nombre.length > 50) {
@@ -196,6 +200,7 @@ class CrearContactoFragment : Fragment() {
         return true
     }
 
+    //Si el teléfono no cumple el patrón correspondiente a Patterns.PHONE muestra mensaje de error
     private fun esTelefonoValido(telefono: String): Boolean {
         if (!Patterns.PHONE.matcher(telefono).matches()) {
             tilTelefono.error = resources.getString(R.string.telefonoInvalido)
@@ -207,6 +212,7 @@ class CrearContactoFragment : Fragment() {
         return true
     }
 
+    //Si el correo cumple no el patrón correspondiente a Patterns.EMAIL_ADDRESS muestra mensaje de error
     private fun esCorreoValido(correo: String): Boolean {
         if (!Patterns.EMAIL_ADDRESS.matcher(correo).matches()) {
             tilCorreo.error = resources.getString(R.string.correoInvalido)
@@ -244,12 +250,12 @@ class CrearContactoFragment : Fragment() {
         val bundle = Bundle()
 
 
+        //Si ha creado un contacto, procede a crearlo en la base de datos y lo devuelve al fragment inicial
         if (valor == 1) {
-
-
             activityDataBaseListener.createContact(nombre.text.toString(),direccion.text.toString(),movil.text.toString(),telefono.text.toString(),correo.text.toString())
             activityPassData.passData(bundle, 0)
 
+            //Si cancela la operación, lo devuelve al fragment inicial
         } else
             activityPassData.passData(bundle, 0)
     }

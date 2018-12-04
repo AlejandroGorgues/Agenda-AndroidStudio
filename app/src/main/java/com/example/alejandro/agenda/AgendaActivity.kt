@@ -56,6 +56,8 @@ class AgendaActivity : AppCompatActivity(), DataPassListener, DataBaseListener {
     }
 
 
+
+    //A partir del valor asociado al fragment, se remplaca el actual con los valores que hay en data
     override fun passData(data: Bundle, fragment: Int) {
         val transaction = manager!!.beginTransaction()
         val fragmentReplace: Fragment
@@ -86,10 +88,12 @@ class AgendaActivity : AppCompatActivity(), DataPassListener, DataBaseListener {
         transaction.commit()
     }
 
+    //Se modifica el usuario en la base de datos asociado a la id
     override fun modifiedDataContact(id: Int, nombre: String, direccion: String, movil: String, telefono: String, correo: String) {
         agendaDB!!.modificarContacto(id, nombre, direccion, movil, telefono, correo)
     }
 
+    //Devuelve el array entero de identificadores y los contactos que corresponden a cada identificador
     override fun returnIdentContact(): Pair<IntArray?, ArrayList<Contacto>> {
         val numFilas = agendaDB!!.numerodeFilas()
         contactos.clear()
@@ -108,20 +112,26 @@ class AgendaActivity : AppCompatActivity(), DataPassListener, DataBaseListener {
         return Pair(ident, contactos)
     }
 
+    //Se devuelve el contacto que se busca en la base de datos y se guarda el número de teléfono
+    //asociado al usuario en caso de que realice una llamada
     override fun searchDataContact(id: Int): Contacto {
         val contactoAux = agendaDB!!.buscarContacto(id)
         telefono = contactoAux.telefono
         return contactoAux
     }
 
+    //Inserta un contacto en la base de datos
     override fun createContact(nombre: String, direccion: String, movil: String, telefono: String, correo: String) {
         agendaDB!!.insertarContacto(nombre, direccion, movil, telefono, correo)
     }
 
+    //Elimina un contacto de la base de datos
     override fun deleteContact(id: Int) {
         agendaDB!!.borrarContacto(id)
     }
 
+    //Comprueba si la tarjeta SD está en el dispositivo y que los permisos están dados para exportar
+    //la base de datos a un archivo .CNT
     override fun exportJsonData() {
         val estado = Environment.getExternalStorageState()
         if (estado == Environment.MEDIA_MOUNTED) {
@@ -129,11 +139,13 @@ class AgendaActivity : AppCompatActivity(), DataPassListener, DataBaseListener {
             permiso = Manifest.permission.WRITE_EXTERNAL_STORAGE
             comprobarPermisos()
         } else {
-            Toast.makeText(this, resources.getString(R.string.errorAccesoSD), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, resources.getString(R.string.errorAccesoSD), Toast.LENGTH_SHORT).show()
         }
 
     }
 
+    //Comprueba si la tarjeta SD está en el dispositivo y que los permisos están dados para importar
+    //los contactos de un archivo .CNT a la base de datos
     override fun importJsonData() {
         val estado = Environment.getExternalStorageState()
         if (estado == Environment.MEDIA_MOUNTED || estado == Environment.MEDIA_MOUNTED_READ_ONLY) {
@@ -141,62 +153,68 @@ class AgendaActivity : AppCompatActivity(), DataPassListener, DataBaseListener {
             permiso = Manifest.permission.READ_EXTERNAL_STORAGE
             comprobarPermisos()
         } else {
-            Toast.makeText(this, resources.getString(R.string.errorAccesoSD), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, resources.getString(R.string.errorAccesoSD), Toast.LENGTH_SHORT).show()
         }
 
     }
 
+    //Llama al contacto a partir del número de telefono
     override fun callContact() {
-        permitCode = 3
-        permiso = Manifest.permission.CALL_PHONE
-       comprobarPermisos()
+        val phoneNumber = String.format("tel: %s", telefono)
+        val dialIntent = Intent(Intent.ACTION_DIAL)
+        dialIntent.data = Uri.parse(phoneNumber)
+        startActivity(dialIntent)
     }
 
+    //Obtiene la instancia de la base de datos
     override fun databaseInstance(): AgendaBaseDatos {
         return agendaDB!!
     }
 
+    //Comprueba si los permisos estan dados
     override fun onRequestPermissionsResult(requestCode: Int,
                                             permissions: Array<String>, grantResults: IntArray) {
 
         when (requestCode) {
+            //Si es un permiso de escritura
             MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE ->
 
+                //y el permiso esta dado
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
 
+                    //procede a ejecutar el código correpsondiente
                     tipo = 1
                     metodosPermisos()
                 } else {
                     Toast.makeText(this,resources.getString(R.string.errorEscritura), Toast.LENGTH_LONG).show()
                 }
 
+            //Si es un permiso de lectura
             MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE ->
+
+                //y el permiso esta dado
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    //procede a ejecutar el código correpsondiente
                     tipo = 2
                     metodosPermisos()
                 } else {
                     Toast.makeText(this, resources.getString(R.string.errorLectura), Toast.LENGTH_LONG).show()
-                }
-
-            MY_PERMISSIONS_REQUEST_CALL_PHONE ->
-                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    tipo = 3
-                   metodosPermisos()
-                }else {
-                    Toast.makeText(this, resources.getString(R.string.errorLlamada), Toast.LENGTH_LONG).show()
                 }
         }
     }
 
 
 
+    //Comprueba si los permisos estan dados y si no, los solicita
     private fun comprobarPermisos() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            Toast.makeText(this, "This version is not Android 6 or later " + Build.VERSION.SDK_INT, Toast.LENGTH_LONG).show()
+            Toast.makeText(this, resources.getString(R.string.oldVersion), Toast.LENGTH_LONG).show()
             metodosPermisos()
         } else {
 
+            //Si no estan dados, los solicita
             if (ContextCompat.checkSelfPermission(this, permiso!!) != PackageManager.PERMISSION_GRANTED) {
                 if (ActivityCompat.shouldShowRequestPermissionRationale(this, permiso!!)) {
 
@@ -205,11 +223,12 @@ class AgendaActivity : AppCompatActivity(), DataPassListener, DataBaseListener {
 
                     ActivityCompat.requestPermissions(this, arrayOf(permiso), permitCode!!)
                 }
+                //Si estan dados, procede a ejectuar el código correspondiente
             } else {
-                tipo = when (permiso) {
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE -> 1
-                    Manifest.permission.READ_EXTERNAL_STORAGE -> 2
-                    else -> 3
+                tipo = if(permiso == Manifest.permission.WRITE_EXTERNAL_STORAGE){
+                    1
+                }else{
+                    2
                 }
                 metodosPermisos()
             }
@@ -219,9 +238,10 @@ class AgendaActivity : AppCompatActivity(), DataPassListener, DataBaseListener {
     private fun metodosPermisos(){
         when (tipo) {
             1 -> {
+                //Escribe en un archivo .CNT los datos de la base de datos
                 try {
                     val ruta = Environment.getExternalStorageDirectory()
-                    val f = File(ruta.absolutePath, "contactos.CNT")
+                    val f = File(ruta.absolutePath, ARCHIVO)
                     val miArchivo =  OutputStreamWriter( FileOutputStream(f))
                     miArchivo.write(agendaDB!!.getJson().toString())
                     miArchivo.flush()
@@ -232,9 +252,10 @@ class AgendaActivity : AppCompatActivity(), DataPassListener, DataBaseListener {
                 }
             }
             2 -> {
+                //Lee de un archivo .CNT los datos y los almacena en la base de datos
                 try {
 
-                    val yourFile = File(Environment.getExternalStorageDirectory().absolutePath, "contactos.CNT")
+                    val yourFile = File(Environment.getExternalStorageDirectory().absolutePath, ARCHIVO)
                     val stream = FileInputStream(yourFile)
                     var jsonStr: String? = null
                     try {
@@ -265,18 +286,12 @@ class AgendaActivity : AppCompatActivity(), DataPassListener, DataBaseListener {
                     t.show()
                 }
             }
-            else -> {
-                val phoneNumber = String.format("tel: %s", telefono)
-                val dialIntent = Intent(Intent.ACTION_DIAL)
-                dialIntent.data = Uri.parse(phoneNumber)
-                startActivity(dialIntent)
-            }
         }
     }
 
     companion object {
         const val MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 1
         const val MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 2
-        const val MY_PERMISSIONS_REQUEST_CALL_PHONE = 3
+        const val ARCHIVO = "contactos.CNT"
     }
 }

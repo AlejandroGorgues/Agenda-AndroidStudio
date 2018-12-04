@@ -174,14 +174,17 @@ class MostrarContactoFragment : Fragment() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.bAction_modC -> {
+                //Si modifica el contacto llama al método validarDatos con argumento 1
                 validarDatos(1)
                 true
             }
             R.id.bAction_llamarC -> {
+                //Llama al contacto
                 activityDataBaseListener.callContact()
                 true
             }
             R.id.bAction_cancelarModC -> {
+                //Si cancela la operación llama al método validarDatos con argumento 0
                 validarDatos(0)
                 true
             }
@@ -189,6 +192,7 @@ class MostrarContactoFragment : Fragment() {
         }
     }
 
+    //Si el nombre cumple el patrón ^[a-zA-Z ]+$ o tiene una longitud mayor de 30 muestra mensaje de error
     private fun esNombreValido(nombre: String): Boolean {
         val patron = Pattern.compile("^[a-zA-Z ]+$")
         if (!patron.matcher(nombre).matches() || nombre.length > 30) {
@@ -201,9 +205,10 @@ class MostrarContactoFragment : Fragment() {
         return true
     }
 
+    //Si la dirección cumple el patrón "^[a-zA-Z0-9]+$ o tiene una longitud mayor de 50 muestra mensaje de error
     private fun esDireccionValida(nombre: String): Boolean {
         val patron = Pattern.compile("^[a-zA-Z0-9]+$")
-        if (!patron.matcher(nombre).matches() || nombre.length > 30) {
+        if (!patron.matcher(nombre).matches() || nombre.length > 50) {
             tilNombre.error = resources.getString(R.string.direccionInvalido)
             return false
         } else {
@@ -213,6 +218,7 @@ class MostrarContactoFragment : Fragment() {
         return true
     }
 
+    //Si el teléfono no cumple el patrón correspondiente a Patterns.PHONE muestra mensaje de error
     private fun esTelefonoValido(telefono: String): Boolean {
         if (!Patterns.PHONE.matcher(telefono).matches()) {
             tilTelefono.error = resources.getString(R.string.telefonoInvalido)
@@ -224,6 +230,7 @@ class MostrarContactoFragment : Fragment() {
         return true
     }
 
+    //Si el correo no cumple el patrón correspondiente a Patterns.EMAIL_ADDRESS muestra mensaje de error
     private fun esCorreoValido(correo: String): Boolean {
         if (!Patterns.EMAIL_ADDRESS.matcher(correo).matches()) {
             tilCorreo.error = resources.getString(R.string.correoInvalido)
@@ -264,10 +271,12 @@ class MostrarContactoFragment : Fragment() {
 
         when (valor) {
             1 -> {
+                //Si ha modificado el contacto, procede a modificarlo en la base de datos y lo devuelve al fragment inicial
                 activityDataBaseListener.modifiedDataContact(idC, edNombre.text.toString(), edDireccion.text.toString(), edMovil.text.toString(), edTelefono.text.toString(), edCorreo.text.toString())
                 activityPassData.passData(bundle, 0)
             }
             else ->{
+                //Si cancela la operación, lo devuelve al fragment inicial
                 activityPassData.passData(bundle, 0)
             }
         }

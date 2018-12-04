@@ -48,7 +48,10 @@ class AgendaFragment : Fragment()  {
 
 
 
+        //Carga los valores de los dos arrays
         rellenaLista()
+        //Rellena el adaptador a partir del array de contactos y asocia un evento onClickListener a
+        //cada elemento de la lista
         agendaAdapter = AgendaAdapter(contactos, activityDataBaseListener.databaseInstance())
         agendaAdapter!!.setOnClickListener(View.OnClickListener { v ->
             iDAct = ident!![recyclerAgenda.getChildLayoutPosition(v)]
@@ -56,16 +59,19 @@ class AgendaFragment : Fragment()  {
             popupMenu.inflate(R.menu.menu_gestion_contacto)
             popupMenu.setOnMenuItemClickListener { item ->
                 when {
+                    //Si decide llamar busca al contacto y llama al número de teléfono obtenido
                     item.itemId == R.id.llamarC -> {
                         activityDataBaseListener.searchDataContact(iDAct)
                         activityDataBaseListener.callContact()
                         true
                     }
+                    //Si decide modificar el elemento, cambia de fragment
                     item.itemId == R.id.modificarC -> {
                         modificarContacto()
                         true
                     }
                     else -> {
+                        //Si decide eliminar el elemento, lo eleimina y actualiza la lista
                         activityDataBaseListener.deleteContact(iDAct)
                         rellenaLista()
                         agendaAdapter!!.notifyDataSetChanged()
@@ -79,6 +85,7 @@ class AgendaFragment : Fragment()  {
         })
         inicializarReciclerView()
 
+        //Asocia los eventos táctiles
         val callback = SwipeContactoTouch(agendaAdapter as ContactoTouchAdapter)
         val touchHelper = ItemTouchHelper(callback)
         touchHelper.attachToRecyclerView(recyclerAgenda)
@@ -126,6 +133,7 @@ class AgendaFragment : Fragment()  {
         recyclerAgenda.itemAnimator = DefaultItemAnimator()
     }
 
+    //Obtiene los valores de los arrays y los guarda en los atributos correspondientes
     private fun rellenaLista() {
         val pair = activityDataBaseListener.returnIdentContact()
         ident = pair.first
@@ -138,6 +146,8 @@ class AgendaFragment : Fragment()  {
         activityPassData.passData(Bundle(), 1)
     }
 
+    //Carga los valores del contacto a modificar en un bundle que luego van a ser extraidos en
+    //el fragment correspondiente
     fun modificarContacto() {
         val miContacto: Contacto = activityDataBaseListener.searchDataContact(iDAct)
         val bundle = Bundle()

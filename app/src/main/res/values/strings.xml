@@ -37,6 +37,7 @@
     <string name="errorExportar">Error, no se ha podido exportar a ningun archivo</string>
     <string name="errorImportar">Error, no se ha podido importar ningun archivo</string>
     <string name="errorAccesoSD">Fallo al acceso de la tarjeta SD</string>
+    <string name="oldVersion">La versión que posee es anterior a la version 23, por favor, cambie los permisos manualmente</string>
 
 
     <string name="accion_cancelar">Cancelar</string>

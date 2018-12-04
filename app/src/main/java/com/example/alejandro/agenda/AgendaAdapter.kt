@@ -40,11 +40,16 @@ class AgendaAdapter(private val contactos : ArrayList<Contacto>, private val age
         this.listener = listener
     }
 
+    //A partir de la posición inicial del objeto que se quiere mover, y adonde se quiere mover,
+    //se modifica el array de Contactos y la base de datos
     override fun onMoverItem(fromPosition: Int, toPosition: Int) {
         val contactoAux = contactos[fromPosition]
 
+        //Se llama al método que permite modificar los datos de la base de datos para intercambiarlos
         agendaDB.modificarContacto(contactos[fromPosition].id, contactos[toPosition].nombre!!, contactos[toPosition].direccion!!, contactos[toPosition].movil!!, contactos[toPosition].telefono!!, contactos[toPosition].correo!!)
         agendaDB.modificarContacto(contactos[toPosition].id, contactoAux.nombre!!, contactoAux.direccion!!, contactoAux.movil!!, contactoAux.telefono!!, contactoAux.correo!!)
+
+        //Intercambia las posiciones de los contactos en el array
         if (fromPosition < toPosition) {
             for (i in fromPosition until toPosition) {
                 Collections.swap(contactos, i, i + 1) //método java para intercambiar las posiciones de elementos en un array
