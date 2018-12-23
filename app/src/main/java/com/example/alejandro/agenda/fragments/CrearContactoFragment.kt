@@ -1,6 +1,7 @@
 package com.example.alejandro.agenda.fragments
 
 
+import android.content.res.Configuration
 import android.os.Bundle
 import android.support.design.widget.TextInputLayout
 import android.support.v4.app.Fragment
@@ -10,6 +11,7 @@ import android.text.TextWatcher
 import android.util.Log
 import android.util.Patterns
 import android.view.*
+import android.widget.Button
 import android.widget.EditText
 import com.example.alejandro.agenda.AgendaActivity
 import com.example.alejandro.agenda.interfaces.DataBaseListener
@@ -35,23 +37,23 @@ class CrearContactoFragment : Fragment() {
 
     internal var id: Int = 0
 
-    private lateinit var toolbar: Toolbar
+    private lateinit var creacContactoB: Button
+    private lateinit var cancelarB: Button
 
     private lateinit var activityDataBaseListener: DataBaseListener
     private lateinit var activityPassData: DataPassListener
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        setHasOptionsMenu(true)
+
         val view = inflater.inflate(R.layout.fragment_crear_contacto, container, false)
 
         activityDataBaseListener = activity as DataBaseListener
         activityPassData = activity as DataPassListener
 
 
-
-        toolbar = view.findViewById(R.id.crearCToolbar)
-        (activity as AgendaActivity).setSupportActionBar(toolbar)
+        creacContactoB = view.findViewById(R.id.crearContactoB)
+        cancelarB = view.findViewById(R.id.cancelarContactoB)
 
         nombre = view.findViewById(R.id.crNombre)
         direccion = view.findViewById(R.id.crDireccion)
@@ -149,29 +151,15 @@ class CrearContactoFragment : Fragment() {
                     }
                 })
 
-        return view
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
-        activity!!.menuInflater.inflate(R.menu.menu_crear_contacto, menu)
-        super.onCreateOptionsMenu(menu, inflater)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.bAction_crearC -> {
-                //Si crea un contacto llama al método validarDatos con argumento 1
-                validarDatos(1)
-                true
-            }
-            R.id.bAction_cancelarCrC -> {
-                //Si cancela la operación llama al método validarDatos con argumento 0
-                validarDatos(0)
-
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
+        creacContactoB.setOnClickListener {
+            validarDatos(1)
         }
+
+        cancelarB.setOnClickListener {
+            validarDatos(0)
+        }
+
+        return view
     }
 
     //Si el nombre cumple el patrón ^[a-zA-Z ]+$ o tiene una longitud mayor de 30 muestra mensaje de error
@@ -224,7 +212,7 @@ class CrearContactoFragment : Fragment() {
         return true
     }
 
-    private fun validarDatos(valor: Int) {
+    fun validarDatos(valor: Int) {
         val nombre = tilNombre.editText!!.text.toString()
         val direccion = tilDireccion.editText!!.text.toString()
         val telefono = tilTelefono.editText!!.text.toString()

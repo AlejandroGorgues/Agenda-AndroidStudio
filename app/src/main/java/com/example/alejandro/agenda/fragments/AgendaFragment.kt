@@ -1,5 +1,6 @@
 package com.example.alejandro.agenda.fragments
 
+import android.content.res.Configuration
 import android.os.Bundle
 import android.support.design.widget.FloatingActionButton
 import android.support.v4.app.Fragment
@@ -9,6 +10,7 @@ import android.support.v7.widget.helper.ItemTouchHelper
 import android.widget.PopupMenu
 import android.support.v7.widget.DefaultItemAnimator
 import android.support.v7.widget.LinearLayoutManager
+import android.util.Log
 import android.view.*
 import com.example.alejandro.agenda.*
 import com.example.alejandro.agenda.interfaces.ContactoTouchAdapter
@@ -39,19 +41,12 @@ class AgendaFragment : Fragment()  {
         activityDataBaseListener = activity as DataBaseListener
         activityPassData = activity as DataPassListener
 
-
-        setHasOptionsMenu(true)
-        val toolbar = view.findViewById<Toolbar>(R.id.agendaToolbar)
-        (activity as AgendaActivity).setSupportActionBar(toolbar)
-
         recyclerAgenda = view.findViewById(R.id.listAgenda)
 
 
-
-        //Carga los valores de los dos arrays
-        rellenaLista()
         //Rellena el adaptador a partir del array de contactos y asocia un evento onClickListener a
         //cada elemento de la lista
+        rellenaLista()
         agendaAdapter = AgendaAdapter(contactos, activityDataBaseListener.databaseInstance())
         agendaAdapter!!.setOnClickListener(View.OnClickListener { v ->
             iDAct = ident!![recyclerAgenda.getChildLayoutPosition(v)]
@@ -98,35 +93,6 @@ class AgendaFragment : Fragment()  {
         return view
     }
 
-
-    override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
-        activity!!.menuInflater.inflate(R.menu.menu_agenda, menu)
-        super.onCreateOptionsMenu(menu, inflater)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.action_add -> {
-                creaContacto()
-                return true
-            }
-            R.id.action_exportarJSON -> {
-                activityDataBaseListener.exportJsonData()
-
-                return true
-            }
-            R.id.action_importarJSON -> {
-
-                activityDataBaseListener.importJsonData()
-                rellenaLista()
-                agendaAdapter!!.notifyDataSetChanged()
-
-                return true
-            }
-            else -> return super.onOptionsItemSelected(item)
-        }
-    }
-
     private fun inicializarReciclerView(){
         recyclerAgenda.adapter = agendaAdapter
         recyclerAgenda.layoutManager = LinearLayoutManager(activity)
@@ -138,7 +104,11 @@ class AgendaFragment : Fragment()  {
         val pair = activityDataBaseListener.returnIdentContact()
         ident = pair.first
         contactos = pair.second
+    }
 
+    fun notificarListaLlena(){
+        rellenaLista()
+        agendaAdapter!!.notifyDataSetChanged()
     }
 
     fun creaContacto() {

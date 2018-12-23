@@ -1,5 +1,6 @@
 package com.example.alejandro.agenda.fragments
 
+import android.content.res.Configuration
 import android.os.Bundle
 import android.support.design.widget.TextInputLayout
 import android.support.v4.app.Fragment
@@ -9,6 +10,7 @@ import android.text.TextWatcher
 import android.util.Log
 import android.util.Patterns
 import android.view.*
+import android.widget.Button
 import android.widget.EditText
 import com.example.alejandro.agenda.AgendaActivity
 import com.example.alejandro.agenda.interfaces.DataBaseListener
@@ -33,6 +35,10 @@ class MostrarContactoFragment : Fragment() {
     private lateinit var tilMovil: TextInputLayout
     private lateinit var tilCorreo: TextInputLayout
 
+    private lateinit var modContactoB: Button
+    private lateinit var llamarContactoB: Button
+    private lateinit var cancelarB: Button
+
     private var idC: Int = 0
     private var nombre: String? = null
     private var direccion: String? = null
@@ -45,18 +51,17 @@ class MostrarContactoFragment : Fragment() {
     private lateinit var activityDataBaseListener: DataBaseListener
     private lateinit var activityPassData: DataPassListener
 
-    private lateinit var toolbar: Toolbar
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        setHasOptionsMenu(true)
+
         val view = inflater.inflate(R.layout.fragment_mostrar_contacto, container, false)
 
         activityDataBaseListener = activity as DataBaseListener
         activityPassData = activity as DataPassListener
 
-        toolbar = view.findViewById(R.id.modificarCToolbar)
-        (activity as AgendaActivity).setSupportActionBar(toolbar)
+        modContactoB = view.findViewById(R.id.modContactoB)
+        llamarContactoB = view.findViewById(R.id.llamarContactoB)
+        cancelarB = view.findViewById(R.id.cancelarContactoB)
 
         edNombre = view.findViewById(R.id.edNombre)
         edDireccion = view.findViewById(R.id.edDireccion)
@@ -163,33 +168,17 @@ class MostrarContactoFragment : Fragment() {
                     }
                 })
 
-        return view
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
-        activity!!.menuInflater.inflate(R.menu.menu_modificar_contacto, menu)
-        super.onCreateOptionsMenu(menu, inflater)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.bAction_modC -> {
-                //Si modifica el contacto llama al método validarDatos con argumento 1
-                validarDatos(1)
-                true
-            }
-            R.id.bAction_llamarC -> {
-                //Llama al contacto
-                activityDataBaseListener.callContact()
-                true
-            }
-            R.id.bAction_cancelarModC -> {
-                //Si cancela la operación llama al método validarDatos con argumento 0
-                validarDatos(0)
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
+        modContactoB.setOnClickListener {
+            validarDatos(1)
         }
+        llamarContactoB.setOnClickListener {
+            activityDataBaseListener.callContact()
+        }
+
+        cancelarB.setOnClickListener {
+            validarDatos(0)
+        }
+        return view
     }
 
     //Si el nombre cumple el patrón ^[a-zA-Z ]+$ o tiene una longitud mayor de 30 muestra mensaje de error

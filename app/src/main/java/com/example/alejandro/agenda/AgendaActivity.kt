@@ -3,6 +3,7 @@ package com.example.alejandro.agenda
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.net.Uri
 import android.os.Build
 
@@ -13,7 +14,12 @@ import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.Toolbar
 import android.util.Log
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
 import org.json.JSONArray
 import android.widget.Toast
 import com.example.alejandro.agenda.fragments.AgendaFragment
@@ -22,6 +28,7 @@ import com.example.alejandro.agenda.fragments.MostrarContactoFragment
 import com.example.alejandro.agenda.interfaces.DataBaseListener
 import com.example.alejandro.agenda.interfaces.DataPassListener
 import com.example.alejandro.agenda.model.Contacto
+import kotlinx.android.synthetic.main.activity_agenda.*
 import java.io.*
 import java.nio.channels.FileChannel
 import java.nio.charset.Charset
@@ -39,52 +46,154 @@ class AgendaActivity : AppCompatActivity(), DataPassListener, DataBaseListener {
     private var permitCode: Int? = null
     private var permiso: String? = null
     private var tipo: Int? = null
+    private lateinit var listaToolbar: Toolbar
+    private lateinit var toolbarDetalle: Toolbar
+    private lateinit var fragmentLista: AgendaFragment
+    private lateinit var crearContacto: CrearContactoFragment
+    private lateinit var detalleContacto: MostrarContactoFragment
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContentView(R.layout.activity_agenda)
         agendaDB = AgendaBaseDatos(this)
+
         manager = supportFragmentManager
 
-        val transaction = manager!!.beginTransaction()
-        val fragmentLista = AgendaFragment()
+        fragmentLista = AgendaFragment()
+        crearContacto = CrearContactoFragment()
+        detalleContacto = MostrarContactoFragment()
 
-        transaction.add(R.id.agendaActivityLayout, fragmentLista)
-        transaction.commit()
+        if(resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT){
 
+            listaToolbar = findViewById(R.id.listaContactoToolbar)
+            setSupportActionBar(listaToolbar)
+
+            val transactionVertical = manager!!.beginTransaction()
+            transactionVertical.add(R.id.agendaActivityLayout, fragmentLista, "listaFragment")
+            transactionVertical.commit()
+        }else{
+            listaToolbar = findViewById(R.id.listaContactoToolbar)
+            setSupportActionBar(listaToolbar)
+
+            val transactionHorizontal = manager!!.beginTransaction()
+            transactionHorizontal.replace(R.id.agendaActivityLayout, fragmentLista, "listaFragment")
+            transactionHorizontal.replace(R.id.detalleContacto, crearContacto, "crearFragment")
+            transactionHorizontal.commit()
+        }
 
     }
 
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
 
+        // Inflate the menu; this adds items to the action bar if it is present.
+        menuInflater.inflate(R.menu.menu_agenda, menu)
+        return true
+    }
+
+    override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
+
+        when {
+            this.supportFragmentManager.findFragmentByTag("listaFragment") != null -> {
+                invalidateOptionsMenu()
+
+                menu!!.findItem(R.id.action_exportarJSON).isVisible = true
+                menu.findItem(R.id.action_importarJSON).isVisible = true
+            }
+            this.supportFragmentManager.findFragmentByTag("crearFragment") != null -> {
+                invalidateOptionsMenu()
+
+                menu!!.findItem(R.id.action_exportarJSON).isVisible = false
+                menu.findItem(R.id.action_importarJSON).isVisible = false
+            }
+            else -> {
+                invalidateOptionsMenu()
+
+                menu!!.findItem(R.id.action_exportarJSON).isVisible = false
+                menu.findItem(R.id.action_importarJSON).isVisible = false
+            }
+        }
+        return super.onPrepareOptionsMenu(menu)
+
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_exportarJSON -> {
+                exportJsonData()
+                true
+            }
+            R.id.action_importarJSON -> {
+                importJsonData()
+                fragmentLista.notificarListaLlena()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
 
     //A partir del valor asociado al fragment, se remplaca el actual con los valores que hay en data
     override fun passData(data: Bundle, fragment: Int) {
         val transaction = manager!!.beginTransaction()
         val fragmentReplace: Fragment
+        val fragmentReplaceAux: Fragment
+
+        fragmentLista = AgendaFragment()
+        crearContacto = CrearContactoFragment()
+        detalleContacto = MostrarContactoFragment()
+
+       if(resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT) {
             when (fragment) {
                 0 -> {
-                    fragmentReplace = AgendaFragment()
+
+                    fragmentReplace = fragmentLista
                     fragmentReplace.arguments = data
-                    transaction.replace(R.id.agendaActivityLayout, fragmentReplace)
+                    transaction.replace(R.id.agendaActivityLayout, fragmentReplace, "listaFragment")
 
                 }
                 1 -> {
 
-                    fragmentReplace = CrearContactoFragment()
+                    fragmentReplace = crearContacto
                     fragmentReplace.arguments = data
-                    transaction.replace(R.id.agendaActivityLayout, fragmentReplace)
+                    transaction.replace(R.id.agendaActivityLayout, fragmentReplace, "crearFragment")
+
 
                 }
                 else -> {
-
-
-                    fragmentReplace = MostrarContactoFragment()
+                    fragmentReplace = detalleContacto
                     fragmentReplace.arguments = data
-                    transaction.replace(R.id.agendaActivityLayout, fragmentReplace)
+                    transaction.replace(R.id.agendaActivityLayout, fragmentReplace, "modificarFragment")
+                }
+            }
+        }else{
+            when (fragment) {
+                0 -> {
+                    fragmentReplace = fragmentLista
+                    fragmentReplace.arguments = data
+                    transaction.replace(R.id.agendaActivityLayout, fragmentReplace, "listaFragment")
+                    fragmentReplaceAux = crearContacto
+                    transaction.replace(R.id.detalleContacto, fragmentReplaceAux, "crearFragment")
+                }
+                1 -> {
+                    fragmentReplace = crearContacto
+                    fragmentReplace.arguments = data
+                    transaction.replace(R.id.detalleContacto, fragmentReplace, "crearFragment")
+                    fragmentReplaceAux = fragmentLista
+                    transaction.replace(R.id.agendaActivityLayout, fragmentReplaceAux, "listaFragment")
+                }
+                else -> {
+
+                    fragmentReplace = detalleContacto
+                    fragmentReplace.arguments = data
+                    transaction.replace(R.id.detalleContacto, fragmentReplace, "modificarFragment")
+                    fragmentReplaceAux = fragmentLista
+                    transaction.replace(R.id.agendaActivityLayout, fragmentReplaceAux, "listaFragment")
 
 
                 }
             }
+        }
         transaction.commit()
     }
 

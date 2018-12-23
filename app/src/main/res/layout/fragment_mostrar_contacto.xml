@@ -5,191 +5,205 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    android:orientation="vertical"
-    android:tag="fragmentMostrar"
-    tools:context="com.example.alejandro.agenda.fragments.MostrarContactoFragment">
+    android:orientation="vertical">
 
-    <android.support.v7.widget.Toolbar
-        android:id="@+id/modificarCToolbar"
-        android:layout_height="wrap_content"
-        android:layout_width="match_parent"
-        android:minHeight="?attr/actionBarSize"
-        android:background="?attr/colorPrimary"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-        app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
-    </android.support.v7.widget.Toolbar>
-
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingBottom="@dimen/activity_vertical_margin"
-        android:paddingLeft="@dimen/activity_horizontal_margin"
-        android:paddingRight="@dimen/activity_horizontal_margin"
-        android:paddingTop="@dimen/activity_vertical_margin"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        android:orientation="vertical"
-        tools:context="com.example.alejandro.agenda.MostrarContacto"
-        tools:showIn="@layout/activity_agenda">
+        android:fillViewport="true">
 
-        <LinearLayout
-            android:id="@+id/area_nombre"
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            xmlns:tools="http://schemas.android.com/tools"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="vertical"
+            android:paddingLeft="@dimen/activity_horizontal_margin"
+            android:paddingTop="@dimen/activity_vertical_margin"
+            android:paddingRight="@dimen/activity_horizontal_margin"
+            android:paddingBottom="@dimen/activity_vertical_margin"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior"
+            tools:context="com.example.alejandro.agenda.MostrarContacto"
+            tools:showIn="@layout/activity_agenda">
 
-            <ImageView
-                android:id="@+id/img_cliente"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:src="@drawable/ic_cliente" />
-
-            <android.support.design.widget.TextInputLayout
-                android:id="@+id/til_nombre"
+            <LinearLayout
+                android:id="@+id/area_nombre"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="32dp"
-                app:counterEnabled="true"
-                app:counterMaxLength="30"
-                app:errorEnabled="true">
+                android:orientation="horizontal">
 
-                <android.support.design.widget.TextInputEditText
-                    android:id="@+id/edNombre"
+                <ImageView
+                    android:id="@+id/img_cliente"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:src="@drawable/ic_cliente" />
+
+                <android.support.design.widget.TextInputLayout
+                    android:id="@+id/til_nombre"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:ems="10"
-                    android:hint="@string/hint_nombre"
-                    android:inputType="text"
-                    android:maxLines="1" />
-            </android.support.design.widget.TextInputLayout>
-        </LinearLayout>
+                    android:layout_marginStart="@dimen/textInput_margin"
+                    app:counterEnabled="true"
+                    app:counterMaxLength="30"
+                    app:errorEnabled="true">
 
-        <LinearLayout
-            android:id="@+id/area_telefono"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
+                    <android.support.design.widget.TextInputEditText
+                        android:id="@+id/edNombre"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:ems="10"
+                        android:hint="@string/hint_nombre"
+                        android:inputType="text"
+                        android:maxLines="1" />
+                </android.support.design.widget.TextInputLayout>
+            </LinearLayout>
 
-            <ImageView
-                android:id="@+id/img_correo"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:src="@drawable/ic_telefono" />
-
-            <android.support.design.widget.TextInputLayout
-                android:id="@+id/til_telefono"
+            <LinearLayout
+                android:id="@+id/area_telefono"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="32dp"
-                app:errorEnabled="true">
+                android:orientation="horizontal">
 
-                <android.support.design.widget.TextInputEditText
-                    android:id="@+id/edTelefono"
+                <ImageView
+                    android:id="@+id/img_correo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:src="@drawable/ic_telefono" />
+
+                <android.support.design.widget.TextInputLayout
+                    android:id="@+id/til_telefono"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:ems="10"
-                    android:hint="@string/hint_telefono"
-                    android:inputType="phone" />
-            </android.support.design.widget.TextInputLayout>
-        </LinearLayout>
+                    android:layout_marginStart="@dimen/textInput_margin"
+                    app:errorEnabled="true">
 
-        <LinearLayout
-            android:id="@+id/area_correo"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
+                    <android.support.design.widget.TextInputEditText
+                        android:id="@+id/edTelefono"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:ems="10"
+                        android:hint="@string/hint_telefono"
+                        android:inputType="phone" />
+                </android.support.design.widget.TextInputLayout>
+            </LinearLayout>
 
-            <ImageView
-                android:id="@+id/img_telefono"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:src="@drawable/ic_correo" />
-
-            <android.support.design.widget.TextInputLayout
-                android:id="@+id/til_correo"
+            <LinearLayout
+                android:id="@+id/area_correo"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="32dp"
-                app:errorEnabled="true">
+                android:orientation="horizontal">
 
-                <android.support.design.widget.TextInputEditText
-                    android:id="@+id/edCorreo"
+                <ImageView
+                    android:id="@+id/img_telefono"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:src="@drawable/ic_correo" />
+
+                <android.support.design.widget.TextInputLayout
+                    android:id="@+id/til_correo"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:ems="10"
-                    android:hint="@string/hint_correo"
-                    android:inputType="textEmailAddress"
-                    android:maxLines="1"
-                    />
-            </android.support.design.widget.TextInputLayout>
-        </LinearLayout>
+                    android:layout_marginStart="@dimen/textInput_margin"
+                    app:errorEnabled="true">
 
-        <LinearLayout
-            android:id="@+id/area_direccion"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
+                    <android.support.design.widget.TextInputEditText
+                        android:id="@+id/edCorreo"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:ems="10"
+                        android:hint="@string/hint_correo"
+                        android:inputType="textEmailAddress"
+                        android:maxLines="1" />
+                </android.support.design.widget.TextInputLayout>
+            </LinearLayout>
 
-            <ImageView
-                android:id="@+id/img_direccion"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:src="@drawable/ic_location_city_black_24dp" />
-
-            <android.support.design.widget.TextInputLayout
-                android:id="@+id/til_direccion"
+            <LinearLayout
+                android:id="@+id/area_direccion"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="32dp"
-                app:counterEnabled="true"
-                app:counterMaxLength="60"
-                app:errorEnabled="true">
+                android:orientation="horizontal">
 
-                <android.support.design.widget.TextInputEditText
-                    android:id="@+id/edDireccion"
+                <ImageView
+                    android:id="@+id/img_direccion"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:src="@drawable/ic_location_city_black_24dp" />
+
+                <android.support.design.widget.TextInputLayout
+                    android:id="@+id/til_direccion"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:ems="10"
-                    android:hint="@string/hint_direccion"
-                    android:inputType="text"
-                    android:maxLines="1"/>
-            </android.support.design.widget.TextInputLayout>
-        </LinearLayout>
-        <LinearLayout
-            android:id="@+id/area_movil"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
+                    android:layout_marginStart="@dimen/textInput_margin"
+                    app:counterEnabled="true"
+                    app:counterMaxLength="60"
+                    app:errorEnabled="true">
 
-            <ImageView
-                android:id="@+id/img_movil"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:src="@drawable/ic_stay_primary_portrait_black_24dp" />
+                    <android.support.design.widget.TextInputEditText
+                        android:id="@+id/edDireccion"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:ems="10"
+                        android:hint="@string/hint_direccion"
+                        android:inputType="text"
+                        android:maxLines="1" />
+                </android.support.design.widget.TextInputLayout>
+            </LinearLayout>
 
-            <android.support.design.widget.TextInputLayout
-                android:id="@+id/til_movil"
+            <LinearLayout
+                android:id="@+id/area_movil"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="32dp"
-                app:errorEnabled="true">
+                android:orientation="horizontal">
 
-                <android.support.design.widget.TextInputEditText
-                    android:id="@+id/edMovil"
+                <ImageView
+                    android:id="@+id/img_movil"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:src="@drawable/ic_stay_primary_portrait_black_24dp" />
+
+                <android.support.design.widget.TextInputLayout
+                    android:id="@+id/til_movil"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:ems="10"
-                    android:hint="@string/hint_movil"
-                    android:inputType="phone"
-                    android:maxLines="1"/>
-            </android.support.design.widget.TextInputLayout>
-        </LinearLayout>
+                    android:layout_marginStart="@dimen/textInput_margin"
+                    app:errorEnabled="true">
 
-    </LinearLayout>
+                    <android.support.design.widget.TextInputEditText
+                        android:id="@+id/edMovil"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:ems="10"
+                        android:hint="@string/hint_movil"
+                        android:inputType="phone"
+                        android:maxLines="1" />
+                </android.support.design.widget.TextInputLayout>
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="horizontal">
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:id="@+id/modContactoB"
+                    android:text="@string/titleModificar"/>
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:id="@+id/llamarContactoB"
+                    android:text="@string/titleLlamar"/>
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:id="@+id/cancelarContactoB"
+                    android:text="@string/titleCancelar"/>
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
 </LinearLayout>
