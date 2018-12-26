@@ -11,19 +11,20 @@ import java.util.*
 import android.graphics.drawable.GradientDrawable
 import android.widget.Filter
 import android.widget.Filterable
+import com.example.alejandro.agenda.interfaces.ReloadDataAdapter
 import kotlin.collections.ArrayList
-import android.R.attr.data
 
 
 
 
-class AgendaAdapter(private var contactos : ArrayList<Contacto>, private val agendaDB: AgendaBaseDatos, private val context: Context) : RecyclerView.Adapter<AgendaAdapter.ContactosViewHolder>(), ContactoTouchAdapter, View.OnClickListener, Filterable {
+class AgendaAdapter(private var contactos : ArrayList<Contacto>, private val agendaDB: AgendaBaseDatos, private val context: Context, private val reloadList: ReloadDataAdapter) : RecyclerView.Adapter<AgendaAdapter.ContactosViewHolder>(), ContactoTouchAdapter, View.OnClickListener, Filterable {
 
 
 
     private var listener: View.OnClickListener? = null
     private var contactosFiltered: ArrayList<Contacto> = contactos
-
+    private var contactosAux: ArrayList<Contacto> = ArrayList()
+    private var edited = false
 
 
     override fun onCreateViewHolder(parent: ViewGroup, pos: Int): ContactosViewHolder {
@@ -49,6 +50,10 @@ class AgendaAdapter(private var contactos : ArrayList<Contacto>, private val age
 
     fun setOnClickListener(listener: View.OnClickListener) {
         this.listener = listener
+    }
+
+    fun getContactosAux(): Pair<ArrayList<Contacto>, Boolean>{
+        return Pair(contactosAux, edited)
     }
 
     //A partir de la posición inicial del objeto que se quiere mover, y adonde se quiere mover,
@@ -83,6 +88,7 @@ class AgendaAdapter(private var contactos : ArrayList<Contacto>, private val age
     override fun onEliminarItem(position: Int) {
         agendaDB.borrarContacto(contactos[position].id)
         contactos.removeAt(position)
+        reloadList.reloadListAdapter()
         notifyItemRemoved(position)
 
     }
@@ -115,6 +121,8 @@ class AgendaAdapter(private var contactos : ArrayList<Contacto>, private val age
             @Suppress("UNCHECKED_CAST")
             override fun publishResults(charSequence: CharSequence, filterResults: Filter.FilterResults) {
                 contactos = filterResults.values as ArrayList<Contacto>
+                contactosAux = filterResults.values as ArrayList<Contacto>
+                edited = contactos.size != contactosFiltered.size
                 notifyDataSetChanged()
             }
         }
@@ -143,8 +151,5 @@ class AgendaAdapter(private var contactos : ArrayList<Contacto>, private val age
         }
 
     }
-
-
-
 }
 

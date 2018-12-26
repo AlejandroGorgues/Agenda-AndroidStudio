@@ -17,10 +17,12 @@ import com.example.alejandro.agenda.*
 import com.example.alejandro.agenda.interfaces.ContactoTouchAdapter
 import com.example.alejandro.agenda.interfaces.DataBaseListener
 import com.example.alejandro.agenda.interfaces.DataPassListener
+import com.example.alejandro.agenda.interfaces.ReloadDataAdapter
 import com.example.alejandro.agenda.model.Contacto
 
 
 class AgendaFragment : Fragment()  {
+
 
     private var iDAct = 0
 
@@ -48,13 +50,28 @@ class AgendaFragment : Fragment()  {
 
         recyclerAgenda = view.findViewById(R.id.listAgenda)
 
+        val reloadInterface = object: ReloadDataAdapter {
+            override fun reloadListAdapter() {
+                val pair = activityDataBaseListener.returnIdentContact()
+                ident = pair.first
+                contactos = pair.second
+            }
+
+        }
 
         //Rellena el adaptador a partir del array de contactos y asocia un evento onClickListener a
         //cada elemento de la lista
         rellenaLista()
-        agendaAdapter = AgendaAdapter(contactos, activityDataBaseListener.databaseInstance(), context!!)
+        agendaAdapter = AgendaAdapter(contactos, activityDataBaseListener.databaseInstance(), context!!, reloadInterface)
         agendaAdapter!!.setOnClickListener(View.OnClickListener { v ->
-            iDAct = ident!![recyclerAgenda.getChildLayoutPosition(v)]
+
+            iDAct = if(agendaAdapter!!.getContactosAux().second){
+                val contactoPrueba = agendaAdapter!!.getContactosAux().first[recyclerAgenda.getChildLayoutPosition(v)]
+                contactoPrueba.id
+            }else{
+                ident!![recyclerAgenda.getChildLayoutPosition(v)]
+            }
+
             val popupMenu = PopupMenu(activity, v)
             popupMenu.inflate(R.menu.menu_gestion_contacto)
             popupMenu.setOnMenuItemClickListener { item ->
@@ -78,7 +95,6 @@ class AgendaFragment : Fragment()  {
                         true
                     }
                 }
-
             }
             popupMenu.show()
 
@@ -120,8 +136,6 @@ class AgendaFragment : Fragment()  {
         return view
     }
 
-
-
     private fun inicializarReciclerView(){
         recyclerAgenda.adapter = agendaAdapter
         recyclerAgenda.layoutManager = LinearLayoutManager(activity)
@@ -134,6 +148,8 @@ class AgendaFragment : Fragment()  {
         ident = pair.first
         contactos = pair.second
     }
+
+
 
     fun notificarListaLlena(){
         rellenaLista()
