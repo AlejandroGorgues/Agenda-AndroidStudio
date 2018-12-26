@@ -1,5 +1,6 @@
 package com.example.alejandro.agenda
 
+import android.content.Context
 import android.support.v7.widget.RecyclerView
 import android.view.*
 import android.widget.TextView
@@ -7,17 +8,27 @@ import android.view.LayoutInflater
 import com.example.alejandro.agenda.interfaces.ContactoTouchAdapter
 import com.example.alejandro.agenda.model.Contacto
 import java.util.*
+import android.graphics.drawable.GradientDrawable
+import android.widget.Filter
+import android.widget.Filterable
+import kotlin.collections.ArrayList
+import android.R.attr.data
 
 
-class AgendaAdapter(private val contactos : ArrayList<Contacto>, private val agendaDB: AgendaBaseDatos) : RecyclerView.Adapter<AgendaAdapter.ContactosViewHolder>(), ContactoTouchAdapter, View.OnClickListener {
+
+
+class AgendaAdapter(private var contactos : ArrayList<Contacto>, private val agendaDB: AgendaBaseDatos, private val context: Context) : RecyclerView.Adapter<AgendaAdapter.ContactosViewHolder>(), ContactoTouchAdapter, View.OnClickListener, Filterable {
+
 
 
     private var listener: View.OnClickListener? = null
+    private var contactosFiltered: ArrayList<Contacto> = contactos
 
 
 
     override fun onCreateViewHolder(parent: ViewGroup, pos: Int): ContactosViewHolder {
         val vh = LayoutInflater.from(parent.context).inflate(R.layout.contacto_lista, parent, false)
+
         vh.setOnClickListener(this)
         return ContactosViewHolder(vh)
     }
@@ -28,7 +39,7 @@ class AgendaAdapter(private val contactos : ArrayList<Contacto>, private val age
 
     override fun onBindViewHolder(cvh: ContactosViewHolder, pos: Int) {
         val item = contactos[pos]
-        cvh.bindContactos(item)
+        cvh.bindContactos(item, context)
     }
 
     override fun onClick(view: View?) {
@@ -76,14 +87,56 @@ class AgendaAdapter(private val contactos : ArrayList<Contacto>, private val age
 
     }
 
+    override fun getFilter(): Filter {
+        return object : Filter() {
+            override fun performFiltering(charSequence: CharSequence): Filter.FilterResults {
+                val charString = charSequence.toString()
+                contactos = contactosFiltered
+                contactos = if (charString.isEmpty()) {
+                    contactos
+                } else {
+                    val filteredList = ArrayList<Contacto>()
+                    for (row in contactos) {
+
+                        // name match condition. this might differ depending on your requirement
+                        if (row.nombre!!.toLowerCase().contains(charString.toLowerCase())) {
+                            filteredList.add(row)
+                        }
+                    }
+
+                    filteredList
+                }
+
+                val filterResults = Filter.FilterResults()
+                filterResults.values = contactos
+                return filterResults
+            }
+
+            @Suppress("UNCHECKED_CAST")
+            override fun publishResults(charSequence: CharSequence, filterResults: Filter.FilterResults) {
+                contactos = filterResults.values as ArrayList<Contacto>
+                notifyDataSetChanged()
+            }
+        }
+    }
 
 
-    class ContactosViewHolder (viewC: View) : RecyclerView.ViewHolder(viewC) {
+
+    class ContactosViewHolder (viewC: View ) : RecyclerView.ViewHolder(viewC) {
 
         private var nombreC: TextView = viewC.findViewById(R.id.cNombre)
         private var telefonoC: TextView = viewC.findViewById(R.id.cTelefono)
+        private var circuloView: TextView = viewC.findViewById(R.id.circleView)
 
-        fun bindContactos(c: Contacto) {
+        fun bindContactos(c: Contacto, context: Context) {
+
+            val androidColors =   context.resources.getIntArray(R.array.agendaColors)
+            val randomAndroidColor = androidColors[Random().nextInt(androidColors.size)]
+
+            val drawable = circuloView.background as GradientDrawable
+            drawable.setColor(randomAndroidColor)
+
+            circuloView.text = c.nombre!![0].toString().toUpperCase()
             nombreC.text = c.nombre
             telefonoC.text = c.telefono
 

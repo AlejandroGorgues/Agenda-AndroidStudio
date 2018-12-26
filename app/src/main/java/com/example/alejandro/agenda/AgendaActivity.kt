@@ -1,6 +1,7 @@
 package com.example.alejandro.agenda
 
 import android.Manifest
+import android.app.SearchManager
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
@@ -14,6 +15,7 @@ import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.SearchView
 import android.support.v7.widget.Toolbar
 import android.util.Log
 import android.view.Menu
@@ -28,7 +30,6 @@ import com.example.alejandro.agenda.fragments.MostrarContactoFragment
 import com.example.alejandro.agenda.interfaces.DataBaseListener
 import com.example.alejandro.agenda.interfaces.DataPassListener
 import com.example.alejandro.agenda.model.Contacto
-import kotlinx.android.synthetic.main.activity_agenda.*
 import java.io.*
 import java.nio.channels.FileChannel
 import java.nio.charset.Charset
@@ -47,7 +48,6 @@ class AgendaActivity : AppCompatActivity(), DataPassListener, DataBaseListener {
     private var permiso: String? = null
     private var tipo: Int? = null
     private lateinit var listaToolbar: Toolbar
-    private lateinit var toolbarDetalle: Toolbar
     private lateinit var fragmentLista: AgendaFragment
     private lateinit var crearContacto: CrearContactoFragment
     private lateinit var detalleContacto: MostrarContactoFragment
@@ -89,6 +89,7 @@ class AgendaActivity : AppCompatActivity(), DataPassListener, DataBaseListener {
 
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_agenda, menu)
+
         return true
     }
 

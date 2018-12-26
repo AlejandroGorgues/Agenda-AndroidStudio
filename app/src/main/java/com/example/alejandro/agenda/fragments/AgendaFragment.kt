@@ -3,15 +3,16 @@ package com.example.alejandro.agenda.fragments
 import android.content.res.Configuration
 import android.os.Bundle
 import android.support.design.widget.FloatingActionButton
+import android.support.design.widget.TextInputLayout
 import android.support.v4.app.Fragment
-import android.support.v7.widget.RecyclerView
-import android.support.v7.widget.Toolbar
+import android.support.v7.widget.*
 import android.support.v7.widget.helper.ItemTouchHelper
+import android.text.Editable
+import android.text.TextWatcher
 import android.widget.PopupMenu
-import android.support.v7.widget.DefaultItemAnimator
-import android.support.v7.widget.LinearLayoutManager
 import android.util.Log
 import android.view.*
+import android.widget.EditText
 import com.example.alejandro.agenda.*
 import com.example.alejandro.agenda.interfaces.ContactoTouchAdapter
 import com.example.alejandro.agenda.interfaces.DataBaseListener
@@ -35,6 +36,10 @@ class AgendaFragment : Fragment()  {
 
     private lateinit var addContactoFloatingB: FloatingActionButton
 
+    private lateinit var searchC: EditText
+
+    private lateinit var tilSearch: TextInputLayout
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_agenda, container, false)
@@ -47,7 +52,7 @@ class AgendaFragment : Fragment()  {
         //Rellena el adaptador a partir del array de contactos y asocia un evento onClickListener a
         //cada elemento de la lista
         rellenaLista()
-        agendaAdapter = AgendaAdapter(contactos, activityDataBaseListener.databaseInstance())
+        agendaAdapter = AgendaAdapter(contactos, activityDataBaseListener.databaseInstance(), context!!)
         agendaAdapter!!.setOnClickListener(View.OnClickListener { v ->
             iDAct = ident!![recyclerAgenda.getChildLayoutPosition(v)]
             val popupMenu = PopupMenu(activity, v)
@@ -90,8 +95,32 @@ class AgendaFragment : Fragment()  {
             creaContacto() }
         constraintContacto = view.findViewById(R.id.constrain_contacto)
 
+        searchC = view.findViewById(R.id.searchContacto)
+
+        tilSearch = view.findViewById(R.id.til_search)
+
+
+        searchC.addTextChangedListener(
+                object : TextWatcher {
+                    override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+
+                    }
+
+                    override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
+                        agendaAdapter!!.filter.filter(s)
+                    }
+
+                    override fun afterTextChanged(p0: Editable?) {
+
+                    }
+
+
+                })
+
         return view
     }
+
+
 
     private fun inicializarReciclerView(){
         recyclerAgenda.adapter = agendaAdapter
